@@ -1,0 +1,36 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ComPrnControl.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="CodePage" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">866</Value>
+    </Setting>
+    <Setting Name="rxBuffer" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">81960</Value>
+    </Setting>
+    <Setting Name="ReceiveTimeOut" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">500</Value>
+    </Setting>
+    <Setting Name="SendTimeOut" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">500</Value>
+    </Setting>
+    <Setting Name="Codepages_list" Type="System.String" Scope="User">
+      <Value Profile="(Default)">https://msdn.microsoft.com/en-us/library/system.text.encoding(v=vs.110).aspx</Value>
+    </Setting>
+    <Setting Name="LineBreakTimeout" Type="System.Int64" Scope="User">
+      <Value Profile="(Default)">100</Value>
+    </Setting>
+    <Setting Name="checkBox_hexCommand" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="textBox_command" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="checkBox_hexParam" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="textBox_param" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+  </Settings>
+</SettingsFile>
