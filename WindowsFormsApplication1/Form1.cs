@@ -614,7 +614,7 @@ namespace WindowsFormsApplication1
                                 }
                                 try
                                 {
-                                    for (int m = 0; m < tmpBuffer.Length; m += 3)
+                                    for (int m = 0; m < tmpBuffer.Length; m++)
                                     {
                                         serialPort1.Write(tmpBuffer, m, 1);
                                         progressBar1.Value = (n * tmpBuffer.Length + m) * 100 / (repeat * tmpBuffer.Length);
