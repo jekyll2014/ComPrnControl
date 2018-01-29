@@ -12,7 +12,7 @@ namespace WindowsFormsApplication1
     {
         bool o_cd1, o_dsr1, o_dtr1, o_rts1, o_cts1;
         int SendComing = 0, txtOutState = 0;
-        long oldTicks = DateTime.Now.Ticks, limitTick = 0;
+        long oldTicks = DateTime.Now.Ticks, limitTick = 200;
 
         delegate void SetTextCallback1(string text);
         private void SetText(string text)
@@ -140,39 +140,80 @@ namespace WindowsFormsApplication1
         public const byte Port1Error = 15;
 
         private object threadLock = new object();
-        public void collectBuffer(string tmpBuffer, int state)
+        /*public void collectBuffer(string tmpBuffer, int state)
         {
-            lock (threadLock)
+            if (tmpBuffer != "")
             {
-                if (txtOutState == state && (DateTime.Now.Ticks - oldTicks) < limitTick && state != 12 && state != 22)
+                lock (threadLock)
                 {
-                    SetText(tmpBuffer);
-                    oldTicks = DateTime.Now.Ticks;
-                }
-                else
-                {
-                    if (state == Port1DataIn) tmpBuffer = "\r\n<< " + tmpBuffer;         //sending data
-                    else if (state == Port1DataOut) tmpBuffer = "\r\n>> " + tmpBuffer;    //receiving data
-                    else if (state == Port1SignalIn) tmpBuffer = "\r\n<< " + tmpBuffer;    //pin change received
-                    else if (state == Port1SignalOut) tmpBuffer = "\r\n>> " + tmpBuffer;    //pin changed by user
-                    else if (state == Port1Error) tmpBuffer = "\r\n!! " + tmpBuffer;    //error occured
-                    SetText(tmpBuffer);
-                    txtOutState = state;
-                    oldTicks = DateTime.Now.Ticks;
-                }
-                if (checkBox_saveTo.Checked == true)
-                {
-                    try
+                    if (txtOutState == state && (DateTime.Now.Ticks - oldTicks) < limitTick && state != 12 && state != 22)
                     {
-                        File.AppendAllText(textBox_saveTo.Text, tmpBuffer, Encoding.GetEncoding(ComPrnControl.Properties.Settings.Default.CodePage));
+                        SetText(tmpBuffer);
+                        oldTicks = DateTime.Now.Ticks;
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        MessageBox.Show("\r\nError opening file " + textBox_saveTo.Text + ": " + ex.Message);
+                        if (state == Port1DataIn) tmpBuffer = "\r\n<< " + tmpBuffer;         //sending data
+                        else if (state == Port1DataOut) tmpBuffer = "\r\n>> " + tmpBuffer;    //receiving data
+                        else if (state == Port1SignalIn) tmpBuffer = "\r\n<< " + tmpBuffer;    //pin change received
+                        else if (state == Port1SignalOut) tmpBuffer = "\r\n>> " + tmpBuffer;    //pin changed by user
+                        else if (state == Port1Error) tmpBuffer = "\r\n!! " + tmpBuffer;    //error occured
+                        SetText(tmpBuffer);
+                        txtOutState = state;
+                        oldTicks = DateTime.Now.Ticks;
+                    }
+                    if (checkBox_saveTo.Checked == true)
+                    {
+                        try
+                        {
+                            File.AppendAllText(textBox_saveTo.Text, tmpBuffer, Encoding.GetEncoding(ComPrnControl.Properties.Settings.Default.CodePage));
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("\r\nError opening file " + textBox_saveTo.Text + ": " + ex.Message);
+                        }
                     }
                 }
             }
+        }*/
+
+        public void collectBuffer(string tmpBuffer, int state)
+        {
+            if (tmpBuffer != "")
+            {
+                string time = DateTime.Today.ToShortDateString() + " " + DateTime.Now.ToLongTimeString() + "." + DateTime.Now.Millisecond.ToString("D3");
+                lock (threadLock)
+                {
+                    if (!(txtOutState == state && (DateTime.Now.Ticks - oldTicks) < limitTick && state != Port1DataOut))
+                    {
+                        if (state == Port1DataIn) tmpBuffer = "\r\n<< " + tmpBuffer;         //sending data
+                        else if (state == Port1DataOut) tmpBuffer = "\r\n>> " + tmpBuffer;    //receiving data
+                        else if (state == Port1SignalIn) tmpBuffer = "\r\n<< " + tmpBuffer;    //pin change received
+                        else if (state == Port1SignalOut) tmpBuffer = "\r\n>> " + tmpBuffer;    //pin changed by user
+                        else if (state == Port1Error) tmpBuffer = "\r\n!! " + tmpBuffer;    //error occured
+
+                        if (checkBox_saveTime.Checked == true) tmpBuffer = time + " " + tmpBuffer;
+                        tmpBuffer = "\r\n" + tmpBuffer;
+                        txtOutState = state;
+                    }
+                    if ((checkBox_saveInput.Checked == true && state == Port1DataIn) || (checkBox_saveOutput.Checked == true && state == Port1DataOut))
+                    {
+                        try
+                        {
+                            File.AppendAllText(textBox_saveTo.Text, tmpBuffer, Encoding.GetEncoding(ComPrnControl.Properties.Settings.Default.CodePage));
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("\r\nError opening file " + textBox_saveTo.Text + ": " + ex.Message);
+                        }
+                    }
+                    textBox_terminal.SelectionStart = textBox_terminal.TextLength;
+                    textBox_terminal.SelectedText = tmpBuffer;
+                    oldTicks = DateTime.Now.Ticks;
+                }
+            }
         }
+
 
         public Form1()
         {
@@ -185,9 +226,7 @@ namespace WindowsFormsApplication1
             textBox_command.Text = ComPrnControl.Properties.Settings.Default.textBox_command;
             checkBox_hexParam.Checked = ComPrnControl.Properties.Settings.Default.checkBox_hexParam;
             textBox_param.Text = ComPrnControl.Properties.Settings.Default.textBox_param;
-            textBox_strLimit.Text = ComPrnControl.Properties.Settings.Default.LineBreakTimeout.ToString();
-            limitTick = 0;
-            long.TryParse(textBox_strLimit.Text, out limitTick);
+            limitTick= ComPrnControl.Properties.Settings.Default.LineBreakTimeout;
             limitTick *= 10000;
             serialPort1.Encoding = Encoding.GetEncoding(ComPrnControl.Properties.Settings.Default.CodePage);
             SerialPopulate();
@@ -747,13 +786,6 @@ namespace WindowsFormsApplication1
                 }
                 SendComing = 0;
             }
-        }
-
-        private void textBox_strLimit_TextChanged(object sender, EventArgs e)
-        {
-            limitTick = 0;
-            long.TryParse(textBox_strLimit.Text, out limitTick);
-            limitTick *= 10000;
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
