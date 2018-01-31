@@ -384,7 +384,6 @@ namespace WindowsFormsApplication1
             this.checkBox_autoscroll.AutoSize = true;
             this.checkBox_autoscroll.Checked = true;
             this.checkBox_autoscroll.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox_autoscroll.Enabled = false;
             this.checkBox_autoscroll.Location = new System.Drawing.Point(12, 365);
             this.checkBox_autoscroll.Name = "checkBox_autoscroll";
             this.checkBox_autoscroll.Size = new System.Drawing.Size(75, 17);

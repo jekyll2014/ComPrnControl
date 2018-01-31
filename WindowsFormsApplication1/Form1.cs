@@ -28,9 +28,18 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                //this.textBox_terminal.Text += text;
-                this.textBox_terminal.SelectionStart = this.textBox_terminal.TextLength;
-                this.textBox_terminal.SelectedText = text;
+                int pos = textBox_terminal.SelectionStart;
+                this.textBox_terminal.Text += text;
+                if (checkBox_autoscroll.Checked)
+                {
+                    textBox_terminal.SelectionStart = textBox_terminal.Text.Length;
+                    textBox_terminal.ScrollToCaret();
+                }
+                else
+                {
+                    textBox_terminal.SelectionStart = pos;
+                    textBox_terminal.ScrollToCaret();
+                }
             }
         }
 
@@ -140,43 +149,6 @@ namespace WindowsFormsApplication1
         public const byte Port1Error = 15;
 
         private object threadLock = new object();
-        /*public void collectBuffer(string tmpBuffer, int state)
-        {
-            if (tmpBuffer != "")
-            {
-                lock (threadLock)
-                {
-                    if (txtOutState == state && (DateTime.Now.Ticks - oldTicks) < limitTick && state != 12 && state != 22)
-                    {
-                        SetText(tmpBuffer);
-                        oldTicks = DateTime.Now.Ticks;
-                    }
-                    else
-                    {
-                        if (state == Port1DataIn) tmpBuffer = "\r\n<< " + tmpBuffer;         //sending data
-                        else if (state == Port1DataOut) tmpBuffer = "\r\n>> " + tmpBuffer;    //receiving data
-                        else if (state == Port1SignalIn) tmpBuffer = "\r\n<< " + tmpBuffer;    //pin change received
-                        else if (state == Port1SignalOut) tmpBuffer = "\r\n>> " + tmpBuffer;    //pin changed by user
-                        else if (state == Port1Error) tmpBuffer = "\r\n!! " + tmpBuffer;    //error occured
-                        SetText(tmpBuffer);
-                        txtOutState = state;
-                        oldTicks = DateTime.Now.Ticks;
-                    }
-                    if (checkBox_saveTo.Checked == true)
-                    {
-                        try
-                        {
-                            File.AppendAllText(textBox_saveTo.Text, tmpBuffer, Encoding.GetEncoding(ComPrnControl.Properties.Settings.Default.CodePage));
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show("\r\nError opening file " + textBox_saveTo.Text + ": " + ex.Message);
-                        }
-                    }
-                }
-            }
-        }*/
-
         public void collectBuffer(string tmpBuffer, int state)
         {
             if (tmpBuffer != "")
@@ -207,14 +179,12 @@ namespace WindowsFormsApplication1
                             MessageBox.Show("\r\nError opening file " + textBox_saveTo.Text + ": " + ex.Message);
                         }
                     }
-                    textBox_terminal.Text += tmpBuffer;
-                    textBox_terminal.SelectionStart = textBox_terminal.TextLength;                    
+                    SetText(tmpBuffer);
                     oldTicks = DateTime.Now.Ticks;
                 }
             }
         }
-
-
+        
         public Form1()
         {
             InitializeComponent();
@@ -342,15 +312,6 @@ namespace WindowsFormsApplication1
         {
             textBox_terminal.Clear();
         }
-
-        /*private void textBox_terminal_TextChanged(object sender, EventArgs e)
-        {
-            if (checkBox_autoscroll.Checked)
-            {
-                textBox_terminal.SelectionStart = textBox_terminal.Text.Length;
-                textBox_terminal.ScrollToCaret();
-            }
-        }*/
 
         private void textBox_command_Leave(object sender, EventArgs e)
         {
