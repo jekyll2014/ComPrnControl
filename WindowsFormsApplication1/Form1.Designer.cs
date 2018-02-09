@@ -411,12 +411,14 @@ namespace WindowsFormsApplication1
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox_terminal.Font = new System.Drawing.Font("Courier New", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.textBox_terminal.Location = new System.Drawing.Point(12, 198);
+            this.textBox_terminal.MaxLength = 3276700;
             this.textBox_terminal.Multiline = true;
             this.textBox_terminal.Name = "textBox_terminal";
             this.textBox_terminal.ReadOnly = true;
             this.textBox_terminal.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.textBox_terminal.Size = new System.Drawing.Size(560, 153);
             this.textBox_terminal.TabIndex = 18;
+            this.textBox_terminal.WordWrap = false;
             // 
             // textBox_command
             // 

@@ -21,15 +21,15 @@ namespace WindowsFormsApplication1
             // calling thread to the thread ID of the creating thread.
             // If these threads are different, it returns true.
             //if (this.textBox_terminal1.InvokeRequired)
-            if (this.textBox_terminal.InvokeRequired)
+            if (textBox_terminal.InvokeRequired)
             {
                 SetTextCallback1 d = new SetTextCallback1(SetText);
-                this.BeginInvoke(d, new object[] { text });
+                BeginInvoke(d, new object[] { text });
             }
             else
             {
                 int pos = textBox_terminal.SelectionStart;
-                this.textBox_terminal.Text += text;
+                textBox_terminal.AppendText(text);
                 if (checkBox_autoscroll.Checked)
                 {
                     textBox_terminal.SelectionStart = textBox_terminal.Text.Length;
@@ -156,7 +156,7 @@ namespace WindowsFormsApplication1
                 string time = DateTime.Today.ToShortDateString() + " " + DateTime.Now.ToLongTimeString() + "." + DateTime.Now.Millisecond.ToString("D3");
                 lock (threadLock)
                 {
-                    if (!(txtOutState == state && (DateTime.Now.Ticks - oldTicks) < limitTick && state != Port1DataOut))
+                    //if (!(txtOutState == state && (DateTime.Now.Ticks - oldTicks) < limitTick && state != Port1DataOut))
                     {
                         if (state == Port1DataIn) tmpBuffer = "<< " + tmpBuffer;         //sending data
                         else if (state == Port1DataOut) tmpBuffer = ">> " + tmpBuffer;    //receiving data
@@ -168,7 +168,9 @@ namespace WindowsFormsApplication1
                         tmpBuffer = "\r\n" + tmpBuffer;
                         txtOutState = state;
                     }
-                    if ((checkBox_saveInput.Checked == true && state == Port1DataIn) || (checkBox_saveOutput.Checked == true && state == Port1DataOut))
+                    SetText(tmpBuffer);
+
+                    if ((checkBox_saveInput.Checked == true && (state == Port1DataIn || state == Port1SignalIn)) || (checkBox_saveOutput.Checked == true && (state == Port1DataOut || state == Port1SignalOut)))
                     {
                         try
                         {
@@ -179,12 +181,11 @@ namespace WindowsFormsApplication1
                             MessageBox.Show("\r\nError opening file " + textBox_saveTo.Text + ": " + ex.Message);
                         }
                     }
-                    SetText(tmpBuffer);
                     oldTicks = DateTime.Now.Ticks;
                 }
             }
         }
-        
+
         public Form1()
         {
             InitializeComponent();
@@ -196,7 +197,7 @@ namespace WindowsFormsApplication1
             textBox_command.Text = ComPrnControl.Properties.Settings.Default.textBox_command;
             checkBox_hexParam.Checked = ComPrnControl.Properties.Settings.Default.checkBox_hexParam;
             textBox_param.Text = ComPrnControl.Properties.Settings.Default.textBox_param;
-            limitTick= ComPrnControl.Properties.Settings.Default.LineBreakTimeout;
+            limitTick = ComPrnControl.Properties.Settings.Default.LineBreakTimeout;
             limitTick *= 10000;
             serialPort1.Encoding = Encoding.GetEncoding(ComPrnControl.Properties.Settings.Default.CodePage);
             SerialPopulate();
@@ -541,7 +542,7 @@ namespace WindowsFormsApplication1
             }
             else if (SendComing == 0)
             {
-                UInt16 repeat = 1, delay = 1, strDelay = 1;
+                UInt16 repeat = 1, delay = 0, strDelay = 0;
 
                 if (textBox_fileName.Text != "" && textBox_sendNum.Text != "" && UInt16.TryParse(textBox_sendNum.Text, out repeat) && UInt16.TryParse(textBox_delay.Text, out delay) && UInt16.TryParse(textBox_strDelay.Text, out strDelay))
                 {
@@ -589,7 +590,7 @@ namespace WindowsFormsApplication1
                                     {
                                         serialPort1.Write(tmpBuffer, m, 1);
                                         progressBar1.Value = (n * tmpBuffer.Length + m) * 100 / (repeat * tmpBuffer.Length);
-                                        await TaskEx.Delay(strDelay);
+                                        if (strDelay > 0) await TaskEx.Delay(strDelay);
                                         if (SendComing > 1) m = tmpBuffer.Length;
                                     }
                                     if (checkBox_hexTerminal.Checked) outStr = Accessory.ConvertByteArrayToHex(tmpBuffer);
@@ -660,7 +661,7 @@ namespace WindowsFormsApplication1
                                         else outStr = Accessory.ConvertHexToString(tmpBuffer[m].ToString());
                                         collectBuffer(outStr, Port1DataOut);
                                         progressBar1.Value = (n * tmpBuffer.Length + m) * 100 / (repeat * tmpBuffer.Length);
-                                        await TaskEx.Delay(strDelay);
+                                        if (strDelay > 0) await TaskEx.Delay(strDelay);
                                         if (SendComing > 1) m = tmpBuffer.Length;
                                     }
                                 }
@@ -690,7 +691,7 @@ namespace WindowsFormsApplication1
                                     {
                                         serialPort1.Write(Accessory.ConvertHexToByteArray(tmpBuffer.Substring(m, 3)), 0, 1);
                                         progressBar1.Value = (n * tmpBuffer.Length + m) * 100 / (repeat * tmpBuffer.Length);
-                                        await TaskEx.Delay(strDelay);
+                                        if (strDelay > 0) await TaskEx.Delay(strDelay);
                                         if (SendComing > 1) m = tmpBuffer.Length;
                                     }
                                     if (checkBox_hexTerminal.Checked) outStr = tmpBuffer;
@@ -733,7 +734,7 @@ namespace WindowsFormsApplication1
                                 collectBuffer(outStr, Port1DataOut);
                             }
                         }
-                        if (repeat > 1) await TaskEx.Delay(delay);
+                        if (repeat > 1 && delay > 0) await TaskEx.Delay(delay);
                         if (SendComing > 1) n = repeat;
                     }
                     button_Send.Enabled = true;
