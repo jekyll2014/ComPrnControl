@@ -156,7 +156,7 @@ namespace WindowsFormsApplication1
                 string time = DateTime.Today.ToShortDateString() + " " + DateTime.Now.ToLongTimeString() + "." + DateTime.Now.Millisecond.ToString("D3");
                 lock (threadLock)
                 {
-                    //if (!(txtOutState == state && (DateTime.Now.Ticks - oldTicks) < limitTick && state != Port1DataOut))
+                    if (!(txtOutState == state && (DateTime.Now.Ticks - oldTicks) < limitTick && state != Port1DataOut))
                     {
                         if (state == Port1DataIn) tmpBuffer = "<< " + tmpBuffer;         //sending data
                         else if (state == Port1DataOut) tmpBuffer = ">> " + tmpBuffer;    //receiving data

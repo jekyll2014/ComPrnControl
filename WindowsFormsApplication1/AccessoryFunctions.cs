@@ -163,13 +163,13 @@ public partial class Accessory
                     for (int i1 = 0; i1 < 2 - tmpStr.Length; i1++) outStr.Append("0");
                     outStr.Append(tmpStr);
                     outStr.Append(" ");
-                    tmpStr.Clear();
+                    tmpStr.Length = 0;
                 }
                 if (tmpStr.Length == 2)
                 {
                     outStr.Append(tmpStr);
                     outStr.Append(" ");
-                    tmpStr.Clear();
+                    tmpStr.Length = 0;
                 }
             }
             if (tmpStr.Length > 0)
@@ -202,13 +202,13 @@ public partial class Accessory
                     for (int i1 = 0; i1 < inStr.Length - tmpStr.Length; i1++) outStr.Append("0");
                     outStr.Append(tmpStr);
                     outStr.Append(" ");
-                    tmpStr.Clear();
+                    tmpStr.Length = 0;
                 }
                 if (tmpStr.Length == inStr.Length)
                 {
                     outStr.Append(tmpStr);
                     outStr.Append(" ");
-                    tmpStr.Clear();
+                    tmpStr.Length = 0;
                 }
             }
             if (tmpStr.Length > 0)
@@ -241,13 +241,13 @@ public partial class Accessory
                     for (int i1 = 0; i1 < length - tmpStr.Length; i1++) outStr.Append("0");
                     outStr.Append(tmpStr);
                     outStr.Append(" ");
-                    tmpStr.Clear();
+                    tmpStr.Length = 0;
                 }
                 if (tmpStr.Length == length)
                 {
                     outStr.Append(tmpStr);
                     outStr.Append(" ");
-                    tmpStr.Clear();
+                    tmpStr.Length = 0;
                 }
             }
             if (tmpStr.Length > 0)
@@ -280,13 +280,13 @@ public partial class Accessory
                     for (int i1 = 0; i1 < 8 - tmpStr.Length; i1++) outStr.Append("0");
                     outStr.Append(tmpStr);
                     outStr.Append(" ");
-                    tmpStr.Clear();
+                    tmpStr.Length = 0;
                 }
                 if (tmpStr.Length == 8)
                 {
                     outStr.Append(tmpStr);
                     outStr.Append(" ");
-                    tmpStr.Clear();
+                    tmpStr.Length = 0;
                 }
             }
             if (tmpStr.Length > 0)
