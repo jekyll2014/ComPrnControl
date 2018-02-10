@@ -12,7 +12,7 @@ namespace WindowsFormsApplication1
     {
         bool o_cd1, o_dsr1, o_dtr1, o_rts1, o_cts1;
         int SendComing = 0, txtOutState = 0;
-        long oldTicks = DateTime.Now.Ticks, limitTick = 0;
+        long oldTicks = DateTime.Now.Ticks, limitTick = 200;
 
         delegate void SetTextCallback1(string text);
         private void SetText(string text)
@@ -21,16 +21,25 @@ namespace WindowsFormsApplication1
             // calling thread to the thread ID of the creating thread.
             // If these threads are different, it returns true.
             //if (this.textBox_terminal1.InvokeRequired)
-            if (this.textBox_terminal.InvokeRequired)
+            if (textBox_terminal.InvokeRequired)
             {
                 SetTextCallback1 d = new SetTextCallback1(SetText);
-                this.BeginInvoke(d, new object[] { text });
+                BeginInvoke(d, new object[] { text });
             }
             else
             {
-                //this.textBox_terminal.Text += text;
-                this.textBox_terminal.SelectionStart = this.textBox_terminal.TextLength;
-                this.textBox_terminal.SelectedText = text;
+                int pos = textBox_terminal.SelectionStart;
+                textBox_terminal.AppendText(text);
+                if (checkBox_autoscroll.Checked)
+                {
+                    textBox_terminal.SelectionStart = textBox_terminal.Text.Length;
+                    textBox_terminal.ScrollToCaret();
+                }
+                else
+                {
+                    textBox_terminal.SelectionStart = pos;
+                    textBox_terminal.ScrollToCaret();
+                }
             }
         }
 
@@ -142,34 +151,37 @@ namespace WindowsFormsApplication1
         private object threadLock = new object();
         public void collectBuffer(string tmpBuffer, int state)
         {
-            lock (threadLock)
+            if (tmpBuffer != "")
             {
-                if (txtOutState == state && (DateTime.Now.Ticks - oldTicks) < limitTick && state != 12 && state != 22)
+                string time = DateTime.Today.ToShortDateString() + " " + DateTime.Now.ToLongTimeString() + "." + DateTime.Now.Millisecond.ToString("D3");
+                lock (threadLock)
                 {
-                    SetText(tmpBuffer);
-                    oldTicks = DateTime.Now.Ticks;
-                }
-                else
-                {
-                    if (state == Port1DataIn) tmpBuffer = "\r\n<< " + tmpBuffer;         //sending data
-                    else if (state == Port1DataOut) tmpBuffer = "\r\n>> " + tmpBuffer;    //receiving data
-                    else if (state == Port1SignalIn) tmpBuffer = "\r\n<< " + tmpBuffer;    //pin change received
-                    else if (state == Port1SignalOut) tmpBuffer = "\r\n>> " + tmpBuffer;    //pin changed by user
-                    else if (state == Port1Error) tmpBuffer = "\r\n!! " + tmpBuffer;    //error occured
-                    SetText(tmpBuffer);
-                    txtOutState = state;
-                    oldTicks = DateTime.Now.Ticks;
-                }
-                if (checkBox_saveTo.Checked == true)
-                {
-                    try
+                    if (!(txtOutState == state && (DateTime.Now.Ticks - oldTicks) < limitTick && state != Port1DataOut))
                     {
-                        File.AppendAllText(textBox_saveTo.Text, tmpBuffer, Encoding.GetEncoding(ComPrnControl.Properties.Settings.Default.CodePage));
+                        if (state == Port1DataIn) tmpBuffer = "<< " + tmpBuffer;         //sending data
+                        else if (state == Port1DataOut) tmpBuffer = ">> " + tmpBuffer;    //receiving data
+                        else if (state == Port1SignalIn) tmpBuffer = "<< " + tmpBuffer;    //pin change received
+                        else if (state == Port1SignalOut) tmpBuffer = ">> " + tmpBuffer;    //pin changed by user
+                        else if (state == Port1Error) tmpBuffer = "!! " + tmpBuffer;    //error occured
+
+                        if (checkBox_saveTime.Checked == true) tmpBuffer = time + " " + tmpBuffer;
+                        tmpBuffer = "\r\n" + tmpBuffer;
+                        txtOutState = state;
                     }
-                    catch (Exception ex)
+                    SetText(tmpBuffer);
+
+                    if ((checkBox_saveInput.Checked == true && (state == Port1DataIn || state == Port1SignalIn)) || (checkBox_saveOutput.Checked == true && (state == Port1DataOut || state == Port1SignalOut)))
                     {
-                        MessageBox.Show("\r\nError opening file " + textBox_saveTo.Text + ": " + ex.Message);
+                        try
+                        {
+                            File.AppendAllText(textBox_saveTo.Text, tmpBuffer, Encoding.GetEncoding(ComPrnControl.Properties.Settings.Default.CodePage));
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show("\r\nError opening file " + textBox_saveTo.Text + ": " + ex.Message);
+                        }
                     }
+                    oldTicks = DateTime.Now.Ticks;
                 }
             }
         }
@@ -185,9 +197,7 @@ namespace WindowsFormsApplication1
             textBox_command.Text = ComPrnControl.Properties.Settings.Default.textBox_command;
             checkBox_hexParam.Checked = ComPrnControl.Properties.Settings.Default.checkBox_hexParam;
             textBox_param.Text = ComPrnControl.Properties.Settings.Default.textBox_param;
-            textBox_strLimit.Text = ComPrnControl.Properties.Settings.Default.LineBreakTimeout.ToString();
-            limitTick = 0;
-            long.TryParse(textBox_strLimit.Text, out limitTick);
+            limitTick = ComPrnControl.Properties.Settings.Default.LineBreakTimeout;
             limitTick *= 10000;
             serialPort1.Encoding = Encoding.GetEncoding(ComPrnControl.Properties.Settings.Default.CodePage);
             SerialPopulate();
@@ -304,23 +314,14 @@ namespace WindowsFormsApplication1
             textBox_terminal.Clear();
         }
 
-        /*private void textBox_terminal_TextChanged(object sender, EventArgs e)
-        {
-            if (checkBox_autoscroll.Checked)
-            {
-                textBox_terminal.SelectionStart = textBox_terminal.Text.Length;
-                textBox_terminal.ScrollToCaret();
-            }
-        }*/
-
         private void textBox_command_Leave(object sender, EventArgs e)
         {
-            if (checkBox_hexCommand.Checked) textBox_command.Text = Accessory.checkHexString(textBox_command.Text);
+            if (checkBox_hexCommand.Checked) textBox_command.Text = Accessory.CheckHexString(textBox_command.Text);
         }
 
         private void textBox_param_Leave(object sender, EventArgs e)
         {
-            if (checkBox_hexParam.Checked) textBox_param.Text = Accessory.checkHexString(textBox_param.Text);
+            if (checkBox_hexParam.Checked) textBox_param.Text = Accessory.CheckHexString(textBox_param.Text);
         }
 
         private void checkBox_DTR1_CheckedChanged(object sender, EventArgs e)
@@ -541,7 +542,7 @@ namespace WindowsFormsApplication1
             }
             else if (SendComing == 0)
             {
-                UInt16 repeat = 1, delay = 1, strDelay = 1;
+                UInt16 repeat = 1, delay = 0, strDelay = 0;
 
                 if (textBox_fileName.Text != "" && textBox_sendNum.Text != "" && UInt16.TryParse(textBox_sendNum.Text, out repeat) && UInt16.TryParse(textBox_delay.Text, out delay) && UInt16.TryParse(textBox_strDelay.Text, out strDelay))
                 {
@@ -560,6 +561,7 @@ namespace WindowsFormsApplication1
                         long length = 0;
                         if (repeat > 1) outStr = "\r\nSend cycle " + (n + 1).ToString() + "/" + repeat.ToString() + "\r\n";
                         else outStr = "";
+                        collectBuffer(outStr, Port1DataOut);
                         try
                         {
                             length = new FileInfo(textBox_fileName.Text).Length;
@@ -588,11 +590,11 @@ namespace WindowsFormsApplication1
                                     {
                                         serialPort1.Write(tmpBuffer, m, 1);
                                         progressBar1.Value = (n * tmpBuffer.Length + m) * 100 / (repeat * tmpBuffer.Length);
-                                        await TaskEx.Delay(strDelay);
+                                        if (strDelay > 0) await TaskEx.Delay(strDelay);
                                         if (SendComing > 1) m = tmpBuffer.Length;
                                     }
-                                    if (checkBox_hexTerminal.Checked) outStr += Accessory.ConvertByteArrayToHex(tmpBuffer);
-                                    else outStr += Accessory.ConvertHexToString(Accessory.ConvertByteArrayToHex(tmpBuffer));
+                                    if (checkBox_hexTerminal.Checked) outStr = Accessory.ConvertByteArrayToHex(tmpBuffer);
+                                    else outStr = Accessory.ConvertHexToString(Accessory.ConvertByteArrayToHex(tmpBuffer));
                                     collectBuffer(outStr, Port1DataOut);
                                 }
                                 catch (Exception ex)
@@ -625,8 +627,8 @@ namespace WindowsFormsApplication1
                                     MessageBox.Show("Error sending to port " + serialPort1.PortName + ": " + ex.Message);
                                 }
                                 progressBar1.Value = 100;
-                                if (checkBox_hexTerminal.Checked) outStr += Accessory.ConvertByteArrayToHex(tmpBuffer);
-                                else outStr += Accessory.ConvertHexToString(Accessory.ConvertByteArrayToHex(tmpBuffer));
+                                if (checkBox_hexTerminal.Checked) outStr = Accessory.ConvertByteArrayToHex(tmpBuffer);
+                                else outStr = Accessory.ConvertHexToString(Accessory.ConvertByteArrayToHex(tmpBuffer));
                                 collectBuffer(outStr, Port1DataOut);
                             }
                         }
@@ -638,7 +640,8 @@ namespace WindowsFormsApplication1
                                 try
                                 {
                                     length = new FileInfo(textBox_fileName.Text).Length;
-                                    tmpBuffer = File.ReadAllText(textBox_fileName.Text).Replace("\n", "").Split('\r');
+                                    //tmpBuffer = File.ReadAllText(textBox_fileName.Text).Replace("\n", "").Split('\r');
+                                    tmpBuffer = File.ReadAllLines(textBox_fileName.Text);
                                 }
                                 catch (Exception ex)
                                 {
@@ -646,18 +649,19 @@ namespace WindowsFormsApplication1
                                 }
                                 for (int m = 0; m < tmpBuffer.Length; m++)
                                 {
-                                    tmpBuffer[m] = Accessory.checkHexString(tmpBuffer[m]);
+                                    tmpBuffer[m] = Accessory.CheckHexString(tmpBuffer[m]);
                                 }
                                 try
                                 {
                                     for (int m = 0; m < tmpBuffer.Length; m++)
                                     {
-                                        serialPort1.Write(Accessory.ConvertHexToByteArray(tmpBuffer[m]), 0, tmpBuffer[m].Length / 3);
-                                        if (checkBox_hexTerminal.Checked) outStr += tmpBuffer[m];
-                                        else outStr += Accessory.ConvertHexToString(tmpBuffer[m].ToString());
+                                        byte[] s = Accessory.ConvertHexToByteArray(tmpBuffer[m]);
+                                        serialPort1.Write(s, 0, s.Length);
+                                        if (checkBox_hexTerminal.Checked) outStr = tmpBuffer[m];
+                                        else outStr = Accessory.ConvertHexToString(tmpBuffer[m].ToString());
                                         collectBuffer(outStr, Port1DataOut);
                                         progressBar1.Value = (n * tmpBuffer.Length + m) * 100 / (repeat * tmpBuffer.Length);
-                                        await TaskEx.Delay(strDelay);
+                                        if (strDelay > 0) await TaskEx.Delay(strDelay);
                                         if (SendComing > 1) m = tmpBuffer.Length;
                                     }
                                 }
@@ -680,18 +684,18 @@ namespace WindowsFormsApplication1
                                 {
                                     MessageBox.Show("\r\nError reading file " + textBox_fileName.Text + ": " + ex.Message);
                                 }
-                                tmpBuffer = Accessory.checkHexString(tmpBuffer);
+                                tmpBuffer = Accessory.CheckHexString(tmpBuffer);
                                 try
                                 {
                                     for (int m = 0; m < tmpBuffer.Length; m += 3)
                                     {
                                         serialPort1.Write(Accessory.ConvertHexToByteArray(tmpBuffer.Substring(m, 3)), 0, 1);
                                         progressBar1.Value = (n * tmpBuffer.Length + m) * 100 / (repeat * tmpBuffer.Length);
-                                        await TaskEx.Delay(strDelay);
+                                        if (strDelay > 0) await TaskEx.Delay(strDelay);
                                         if (SendComing > 1) m = tmpBuffer.Length;
                                     }
-                                    if (checkBox_hexTerminal.Checked) outStr += tmpBuffer;
-                                    else outStr += Accessory.ConvertHexToString(tmpBuffer);
+                                    if (checkBox_hexTerminal.Checked) outStr = tmpBuffer;
+                                    else outStr = Accessory.ConvertHexToString(tmpBuffer);
                                     collectBuffer(outStr, Port1DataOut);
                                 }
                                 catch (Exception ex)
@@ -706,7 +710,7 @@ namespace WindowsFormsApplication1
                                 try
                                 {
                                     length = new FileInfo(textBox_fileName.Text).Length;
-                                    tmpBuffer = Accessory.checkHexString(File.ReadAllText(textBox_fileName.Text));
+                                    tmpBuffer = Accessory.CheckHexString(File.ReadAllText(textBox_fileName.Text));
                                 }
                                 catch (Exception ex)
                                 {
@@ -725,12 +729,12 @@ namespace WindowsFormsApplication1
                                     MessageBox.Show("Error sending to port " + serialPort1.PortName + ": " + ex.Message);
                                 }
                                 progressBar1.Value = 100;
-                                if (checkBox_hexTerminal.Checked) outStr += tmpBuffer;
-                                else outStr += Accessory.ConvertHexToString(tmpBuffer);
+                                if (checkBox_hexTerminal.Checked) outStr = tmpBuffer;
+                                else outStr = Accessory.ConvertHexToString(tmpBuffer);
                                 collectBuffer(outStr, Port1DataOut);
                             }
                         }
-                        if (repeat > 1) await TaskEx.Delay(delay);
+                        if (repeat > 1 && delay > 0) await TaskEx.Delay(delay);
                         if (SendComing > 1) n = repeat;
                     }
                     button_Send.Enabled = true;
@@ -744,13 +748,6 @@ namespace WindowsFormsApplication1
                 }
                 SendComing = 0;
             }
-        }
-
-        private void textBox_strLimit_TextChanged(object sender, EventArgs e)
-        {
-            limitTick = 0;
-            long.TryParse(textBox_strLimit.Text, out limitTick);
-            limitTick *= 10000;
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
