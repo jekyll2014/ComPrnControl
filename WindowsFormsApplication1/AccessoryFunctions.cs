@@ -20,7 +20,7 @@ public partial class Accessory
             hexString = hexString.Substring(2, hexString.Length - 2);
             i++;
         }
-        return System.Text.Encoding.GetEncoding(cp).GetString(StrValue, 0, i);
+        return Encoding.GetEncoding(cp).GetString(StrValue, 0, i);
     }
 
     public static byte[] ConvertHexToByteArray(string hexString)
@@ -68,7 +68,7 @@ public partial class Accessory
 
     public static string ConvertStringToHex(string utfString, int cp = 866)
     {
-        byte[] encodedBytes = System.Text.Encoding.GetEncoding(cp).GetBytes(utfString);
+        byte[] encodedBytes = Encoding.GetEncoding(cp).GetBytes(utfString);
         StringBuilder hexStr = new StringBuilder();
         foreach (System.Char c in encodedBytes)
         {
@@ -132,7 +132,7 @@ public partial class Accessory
 
     public static string ConvertStringToBin(string utfString, int cp = 866)
     {
-        byte[] encodedBytes = System.Text.Encoding.GetEncoding(cp).GetBytes(utfString);
+        byte[] encodedBytes = Encoding.GetEncoding(cp).GetBytes(utfString);
         StringBuilder binStr = new StringBuilder();
         foreach (System.Char c in encodedBytes)
         {
