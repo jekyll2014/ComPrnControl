@@ -13,6 +13,7 @@ namespace WindowsFormsApplication1
         bool o_cd1, o_dsr1, o_dtr1, o_rts1, o_cts1;
         int SendComing = 0, txtOutState = 0;
         long oldTicks = DateTime.Now.Ticks, limitTick = 200;
+        int LogLinesLimit = 100;
 
         delegate void SetTextCallback1(string text);
         private void SetText(string text)
@@ -30,6 +31,16 @@ namespace WindowsFormsApplication1
             {
                 int pos = textBox_terminal.SelectionStart;
                 textBox_terminal.AppendText(text);
+                if (textBox_terminal.Lines.Length > LogLinesLimit)
+                {
+                    StringBuilder tmp = new StringBuilder();
+                    for (int i = textBox_terminal.Lines.Length - LogLinesLimit; i < textBox_terminal.Lines.Length; i++)
+                    {
+                        tmp.Append(textBox_terminal.Lines[i]);
+                        tmp.Append("\r\n");
+                    }
+                    textBox_terminal.Text = tmp.ToString();
+                }
                 if (checkBox_autoscroll.Checked)
                 {
                     textBox_terminal.SelectionStart = textBox_terminal.Text.Length;
@@ -200,6 +211,7 @@ namespace WindowsFormsApplication1
             textBox_param.Text = ComPrnControl.Properties.Settings.Default.textBox_param;
             limitTick = ComPrnControl.Properties.Settings.Default.LineBreakTimeout;
             limitTick *= 10000;
+            LogLinesLimit = ComPrnControl.Properties.Settings.Default.LogLinesLimit;
             serialPort1.Encoding = Encoding.GetEncoding(ComPrnControl.Properties.Settings.Default.CodePage);
             SerialPopulate();
         }
