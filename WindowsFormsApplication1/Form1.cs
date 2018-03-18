@@ -92,53 +92,53 @@ namespace WindowsFormsApplication1
         delegate void SetPinCallback1(bool setPin);
         private void SetPinCD1(bool setPin)
         {
-            if (this.checkBox_CD1.InvokeRequired)
+            if (checkBox_CD1.InvokeRequired)
             {
                 SetPinCallback1 d = new SetPinCallback1(SetPinCD1);
-                this.BeginInvoke(d, new object[] { setPin });
+                BeginInvoke(d, new object[] { setPin });
             }
             else
             {
-                this.checkBox_CD1.Checked = setPin;
+                checkBox_CD1.Checked = setPin;
             }
         }
 
         private void SetPinDSR1(bool setPin)
         {
-            if (this.checkBox_DSR1.InvokeRequired)
+            if (checkBox_DSR1.InvokeRequired)
             {
                 SetPinCallback1 d = new SetPinCallback1(SetPinDSR1);
-                this.BeginInvoke(d, new object[] { setPin });
+                BeginInvoke(d, new object[] { setPin });
             }
             else
             {
-                this.checkBox_DSR1.Checked = setPin;
+                checkBox_DSR1.Checked = setPin;
             }
         }
 
         private void SetPinCTS1(bool setPin)
         {
-            if (this.checkBox_CTS1.InvokeRequired)
+            if (checkBox_CTS1.InvokeRequired)
             {
                 SetPinCallback1 d = new SetPinCallback1(SetPinCTS1);
-                this.BeginInvoke(d, new object[] { setPin });
+                BeginInvoke(d, new object[] { setPin });
             }
             else
             {
-                this.checkBox_CTS1.Checked = setPin;
+                checkBox_CTS1.Checked = setPin;
             }
         }
 
         private void SetPinRING1(bool setPin)
         {
-            if (this.checkBox_RI1.InvokeRequired)
+            if (checkBox_RI1.InvokeRequired)
             {
                 SetPinCallback1 d = new SetPinCallback1(SetPinRING1);
-                this.BeginInvoke(d, new object[] { setPin });
+                BeginInvoke(d, new object[] { setPin });
             }
             else
             {
-                this.checkBox_RI1.Checked = setPin;
+                checkBox_RI1.Checked = setPin;
             }
         }
 
@@ -189,6 +189,7 @@ namespace WindowsFormsApplication1
         public Form1()
         {
             InitializeComponent();
+            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.DoubleBuffer, true);
         }
 
         private void Form1_Load(object sender, EventArgs e)
