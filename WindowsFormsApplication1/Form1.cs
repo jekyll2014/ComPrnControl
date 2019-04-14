@@ -10,12 +10,12 @@ namespace WindowsFormsApplication1
 {
     public partial class Form1 : Form
     {
-        bool o_cd1, o_dsr1, o_dtr1, o_rts1, o_cts1;
-        int SendComing = 0, txtOutState = 0;
-        long oldTicks = DateTime.Now.Ticks, limitTick = 200;
-        int LogLinesLimit = 100;
+        private bool o_cd1, o_dsr1, o_dtr1, o_rts1, o_cts1;
+        private int SendComing = 0, txtOutState = 0;
+        private long oldTicks = DateTime.Now.Ticks, limitTick = 200;
+        private int LogLinesLimit = 100;
 
-        delegate void SetTextCallback1(string text);
+        private delegate void SetTextCallback1(string text);
         private void SetText(string text)
         {
             text = Accessory.FilterZeroChar(text);
@@ -55,7 +55,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        void SerialPopulate()
+        private void SerialPopulate()
         {
             comboBox_portname1.Items.Clear();
             comboBox_handshake1.Items.Clear();
@@ -101,7 +101,7 @@ namespace WindowsFormsApplication1
             else button_openport.Enabled = true;
         }
 
-        delegate void SetPinCallback1(bool setPin);
+        private delegate void SetPinCallback1(bool setPin);
         private void SetPinCD1(bool setPin)
         {
             if (checkBox_CD1.InvokeRequired)
@@ -168,7 +168,7 @@ namespace WindowsFormsApplication1
                 string time = DateTime.Today.ToShortDateString() + " " + DateTime.Now.ToLongTimeString() + "." + DateTime.Now.Millisecond.ToString("D3");
                 lock (threadLock)
                 {
-                    if (!(txtOutState == state && (DateTime.Now.Ticks - oldTicks) < limitTick && state != Port1DataOut))
+                    if (txtOutState != state || (DateTime.Now.Ticks - oldTicks) > limitTick || state == Port1DataOut)
                     {
                         if (state == Port1DataIn) tmpBuffer = "<< " + tmpBuffer;         //sending data
                         else if (state == Port1DataOut) tmpBuffer = ">> " + tmpBuffer;    //receiving data
