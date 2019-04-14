@@ -253,7 +253,8 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error reading port " + serialPort1.PortName + ": " + ex.Message);
+                //MessageBox.Show("Error reading port " + serialPort1.PortName + ": " + ex.Message);
+                SetText("Error reading port " + serialPort1.PortName + ": " + ex.Message);
             }
             string outStr1;
             if (checkBox_hexTerminal.Checked) outStr1 = Accessory.ConvertByteArrayToHex(rx.ToArray());
@@ -263,7 +264,8 @@ namespace WindowsFormsApplication1
 
         private void serialPort1_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {
-            MessageBox.Show("Port1 error: " + e.EventType);
+            //MessageBox.Show("Port1 error: " + e.EventType);
+            SetText("Port1 error: " + e.EventType);
         }
 
         private void serialPort1_PinChanged(object sender, SerialPinChangedEventArgs e)
@@ -613,7 +615,8 @@ namespace WindowsFormsApplication1
                                 }
                                 catch (Exception ex)
                                 {
-                                    MessageBox.Show("Error sending to port " + serialPort1.PortName + ": " + ex.Message);
+                                    //MessageBox.Show("Error sending to port " + serialPort1.PortName + ": " + ex.Message);
+                                    SetText("Error sending to port " + serialPort1.PortName + ": " + ex.Message);
                                 }
                             }
                             else //stream
@@ -638,7 +641,8 @@ namespace WindowsFormsApplication1
                                 }
                                 catch (Exception ex)
                                 {
-                                    MessageBox.Show("Error sending to port " + serialPort1.PortName + ": " + ex.Message);
+                                    //MessageBox.Show("Error sending to port " + serialPort1.PortName + ": " + ex.Message);
+                                    SetText("Error sending to port " + serialPort1.PortName + ": " + ex.Message);
                                 }
                                 progressBar1.Value = 100;
                                 if (checkBox_hexTerminal.Checked) outStr = Accessory.ConvertByteArrayToHex(tmpBuffer);
@@ -681,7 +685,8 @@ namespace WindowsFormsApplication1
                                 }
                                 catch (Exception ex)
                                 {
-                                    MessageBox.Show("Error sending to port " + serialPort1.PortName + ": " + ex.Message);
+                                    //MessageBox.Show("Error sending to port " + serialPort1.PortName + ": " + ex.Message);
+                                    SetText("Error sending to port " + serialPort1.PortName + ": " + ex.Message);
                                 }
                                 //if (checkBox_hexTerminal.Checked) outStr += tmpBuffer;
                                 //else outStr += ConvertHexToString(tmpBuffer.ToString());
@@ -740,7 +745,8 @@ namespace WindowsFormsApplication1
                                 }
                                 catch (Exception ex)
                                 {
-                                    MessageBox.Show("Error sending to port " + serialPort1.PortName + ": " + ex.Message);
+                                    //MessageBox.Show("Error sending to port " + serialPort1.PortName + ": " + ex.Message);
+                                    SetText("Error sending to port " + serialPort1.PortName + ": " + ex.Message);
                                 }
                                 progressBar1.Value = 100;
                                 if (checkBox_hexTerminal.Checked) outStr = tmpBuffer;
