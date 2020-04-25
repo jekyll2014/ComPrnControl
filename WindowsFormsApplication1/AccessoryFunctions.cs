@@ -7,28 +7,27 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
-
-public partial class Accessory
+public static class Accessory
 {
     public static string ConvertHexToString(string hexString, int cp = 866)
     {
         hexString = hexString.Replace(" ", "");
         if (hexString.Length % 2 == 1) return "";
-        byte[] StrValue = new byte[hexString.Length / 2];
+        byte[] strValue = new byte[hexString.Length / 2];
         int i = 0;
         while (hexString.Length > 1)
         {
-            StrValue[i] = Convert.ToByte(Convert.ToUInt32(hexString.Substring(0, 2), 16));
+            strValue[i] = Convert.ToByte(Convert.ToUInt32(hexString.Substring(0, 2), 16));
             hexString = hexString.Substring(2, hexString.Length - 2);
             i++;
         }
-        return Encoding.GetEncoding(cp).GetString(StrValue, 0, i);
+        return Encoding.GetEncoding(cp).GetString(strValue, 0, i);
     }
 
     public static byte[] ConvertHexToByteArray(string hexString)
     {
-        hexString = hexString.Replace(" ", "");
-        if (hexString.Length % 2 == 1) hexString = hexString + "0";
+        hexString = hexString?.Replace(" ", "");
+        if (hexString.Length % 2 == 1) hexString += "0";
         byte[] byteValue = new byte[hexString.Length / 2];
         int i = 0;
         while (hexString.Length > 1)
@@ -51,11 +50,9 @@ public partial class Accessory
         return byteValue;
     }
 
-    public static string ConvertHexToDec(string HexString)
+    public static string ConvertHexToDec(string hexString)
     {
-        string DecString;
-        DecString = Convert.ToInt32(HexString, 16).ToString();
-        return DecString;
+        return Convert.ToInt32(hexString, 16).ToString();
     }
 
     public static int ConvertHexToInt(string hexString)
@@ -72,8 +69,9 @@ public partial class Accessory
     {
         byte[] encodedBytes = Encoding.GetEncoding(cp).GetBytes(utfString);
         StringBuilder hexStr = new StringBuilder();
-        foreach (System.Char c in encodedBytes)
+        foreach (var b in encodedBytes)
         {
+            var c = (char)b;
             hexStr.Append(((int)c).ToString("X2"));
             hexStr.Append(" ");
         }
@@ -85,31 +83,30 @@ public partial class Accessory
     {
         decString = decString.Replace(" ", "");
         if (decString.Length % 3 == 1) return "";
-        byte[] StrValue = new byte[decString.Length / 3];
+        byte[] strValue = new byte[decString.Length / 3];
         int i = 0;
         while (decString.Length > 1)
         {
-            if (Convert.ToUInt32(decString.Substring(0, 3), 10) < 256) StrValue[i] = Convert.ToByte(Convert.ToUInt32(decString.Substring(0, 3), 10));
-            else StrValue[i] = 0xff;
+            if (Convert.ToUInt32(decString.Substring(0, 3), 10) < 256) strValue[i] = Convert.ToByte(Convert.ToUInt32(decString.Substring(0, 3), 10));
+            else strValue[i] = 0xff;
             decString = decString.Substring(3, decString.Length - 3);
             i++;
         }
-        return Encoding.GetEncoding(cp).GetString(StrValue, 0, i);
+        return Encoding.GetEncoding(cp).GetString(strValue, 0, i);
     }
 
-    public static string ConvertDecToHex(string DecString)
+    public static string ConvertDecToHex(string decString)
     {
-        string HexString;
-        HexString = Convert.ToInt32(DecString, 16).ToString();
-        return HexString;
+        return Convert.ToInt32(decString, 16).ToString();
     }
 
     public static string ConvertStringToDec(string utfString, int cp = 866)
     {
         byte[] encodedBytes = Encoding.GetEncoding(cp).GetBytes(utfString);
         StringBuilder decStr = new StringBuilder();
-        foreach (System.Char c in encodedBytes)
+        foreach (var b in encodedBytes)
         {
+            var c = (char)b;
             decStr.Append(((int)c).ToString("D3"));
             decStr.Append(" ");
         }
@@ -121,23 +118,24 @@ public partial class Accessory
     {
         binString = binString.Replace(" ", "");
         if (binString.Length % 8 == 1) return "";
-        byte[] StrValue = new byte[binString.Length / 8];
+        byte[] strValue = new byte[binString.Length / 8];
         int i = 0;
         while (binString.Length > 0)
         {
-            StrValue[i] = Convert.ToByte(Convert.ToUInt32(binString.Substring(0, 8), 2));
+            strValue[i] = Convert.ToByte(Convert.ToUInt32(binString.Substring(0, 8), 2));
             binString = binString.Substring(8, binString.Length - 8);
             i++;
         }
-        return Encoding.GetEncoding(cp).GetString(StrValue, 0, i);
+        return Encoding.GetEncoding(cp).GetString(strValue, 0, i);
     }
 
     public static string ConvertStringToBin(string utfString, int cp = 866)
     {
         byte[] encodedBytes = Encoding.GetEncoding(cp).GetBytes(utfString);
         StringBuilder binStr = new StringBuilder();
-        foreach (System.Char c in encodedBytes)
+        foreach (var b in encodedBytes)
         {
+            var c = (char)b;
             string tmpStr = Convert.ToString((byte)c, 2);
             while (tmpStr.Length < 8) tmpStr = "0" + tmpStr;
             binStr.Append(tmpStr);
@@ -182,7 +180,8 @@ public partial class Accessory
             }
             return outStr.ToString().ToUpperInvariant();
         }
-        else return ("");
+
+        return "";
     }
 
     //добавить фильтрацию значений >255
@@ -221,7 +220,8 @@ public partial class Accessory
             }
             return outStr.ToString();
         }
-        else return ("");
+
+        return "";
     }
 
     //добавить фильтрацию значений >255
@@ -260,7 +260,8 @@ public partial class Accessory
             }
             return outStr.ToString();
         }
-        else return ("");
+
+        return "";
     }
 
     // проверить
@@ -299,7 +300,8 @@ public partial class Accessory
             }
             return outStr.ToString();
         }
-        else return ("");
+
+        return "";
     }
 
     //определение формата строки
@@ -331,8 +333,8 @@ public partial class Accessory
             if (l[i + 1] != l[i]) return 0;
         }
         if (l[0] == 2) return 16;
-        else if (l[0] == 3) return 10;
-        else if (l[0] == 8) return 2;
+        if (l[0] == 3) return 10;
+        if (l[0] == 8) return 2;
         return 0;
     }
 
@@ -349,13 +351,13 @@ public partial class Accessory
         return hexStr.ToString();
     }
 
-    public static string ConvertByteArrayToHex(byte[] byteArr, int Length)
+    public static string ConvertByteArrayToHex(byte[] byteArr, int length)
     {
         if (byteArr == null) return "";
-        if (Length > byteArr.Length) Length = byteArr.Length;
+        if (length > byteArr.Length) length = byteArr.Length;
         StringBuilder hexStr = new StringBuilder();
         int i = 0;
-        for (i = 0; i < Length; i++)
+        for (i = 0; i < length; i++)
         {
             hexStr.Append(byteArr[i].ToString("X2"));
             hexStr.Append(" ");
@@ -586,12 +588,12 @@ public partial class Accessory
         }
     }
 
-    public string AssemblyVersion()
+    public static string AssemblyVersion()
     {
         return Assembly.GetExecutingAssembly().GetName().Version.ToString();
     }
 
-    public string ProductVersion()
+    public static string ProductVersion()
     {
         return Application.ProductVersion.ToString();
     }

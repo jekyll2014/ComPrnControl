@@ -55,6 +55,7 @@ namespace WindowsFormsApplication1
             }
         }
 
+
         private void SerialPopulate()
         {
             comboBox_portname1.Items.Clear();
@@ -531,6 +532,17 @@ namespace WindowsFormsApplication1
             {
                 radioButton_byString.Enabled = true;
                 checkBox_hexFileOpen.Text = "hex text data";
+            }
+        }
+
+        private void textBox_fileName_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (button_Send.Enabled)
+            {
+                if (e.KeyData == Keys.Return)
+                {
+                    button_Send_Click(textBox_command, EventArgs.Empty);
+                }
             }
         }
 

@@ -497,6 +497,7 @@ namespace WindowsFormsApplication1
             this.textBox_fileName.Size = new System.Drawing.Size(308, 20);
             this.textBox_fileName.TabIndex = 15;
             this.textBox_fileName.TextChanged += new System.EventHandler(this.textBox_fileName_TextChanged);
+            this.textBox_fileName.KeyUp += new System.Windows.Forms.KeyEventHandler(this.textBox_fileName_KeyUp);
             // 
             // checkBox_hexFileOpen
             // 
@@ -642,9 +643,9 @@ namespace WindowsFormsApplication1
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(141, 366);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(32, 13);
+            this.label3.Size = new System.Drawing.Size(35, 13);
             this.label3.TabIndex = 121;
-            this.label3.Text = "Save";
+            this.label3.Text = "Save:";
             // 
             // checkBox_saveTime
             // 
