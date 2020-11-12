@@ -97,7 +97,7 @@ namespace WindowsFormsApplication1
             this.button_refresh.TabIndex = 9;
             this.button_refresh.Text = "Refresh";
             this.button_refresh.UseVisualStyleBackColor = true;
-            this.button_refresh.Click += new System.EventHandler(this.button_refresh_Click);
+            this.button_refresh.Click += new System.EventHandler(this.Button_refresh_Click);
             // 
             // checkBox_RI1
             // 
@@ -134,7 +134,7 @@ namespace WindowsFormsApplication1
             this.checkBox_RTS1.TabIndex = 27;
             this.checkBox_RTS1.Text = "RTS";
             this.checkBox_RTS1.UseVisualStyleBackColor = true;
-            this.checkBox_RTS1.CheckedChanged += new System.EventHandler(this.checkBox_RTS1_CheckedChanged);
+            this.checkBox_RTS1.CheckedChanged += new System.EventHandler(this.CheckBox_RTS1_CheckedChanged);
             // 
             // checkBox_DTR1
             // 
@@ -147,7 +147,7 @@ namespace WindowsFormsApplication1
             this.checkBox_DTR1.TabIndex = 26;
             this.checkBox_DTR1.Text = "DTR";
             this.checkBox_DTR1.UseVisualStyleBackColor = true;
-            this.checkBox_DTR1.CheckedChanged += new System.EventHandler(this.checkBox_DTR1_CheckedChanged);
+            this.checkBox_DTR1.CheckedChanged += new System.EventHandler(this.CheckBox_DTR1_CheckedChanged);
             // 
             // checkBox_DSR1
             // 
@@ -302,7 +302,7 @@ namespace WindowsFormsApplication1
             this.comboBox_portname1.Size = new System.Drawing.Size(70, 21);
             this.comboBox_portname1.Sorted = true;
             this.comboBox_portname1.TabIndex = 1;
-            this.comboBox_portname1.SelectedIndexChanged += new System.EventHandler(this.comboBox_portname1_SelectedIndexChanged);
+            this.comboBox_portname1.SelectedIndexChanged += new System.EventHandler(this.ComboBox_portname1_SelectedIndexChanged);
             // 
             // button_closeport
             // 
@@ -314,7 +314,7 @@ namespace WindowsFormsApplication1
             this.button_closeport.TabIndex = 8;
             this.button_closeport.Text = "Close";
             this.button_closeport.UseVisualStyleBackColor = true;
-            this.button_closeport.Click += new System.EventHandler(this.button_closeport_Click);
+            this.button_closeport.Click += new System.EventHandler(this.Button_closeport_Click);
             // 
             // button_openport
             // 
@@ -325,7 +325,7 @@ namespace WindowsFormsApplication1
             this.button_openport.TabIndex = 7;
             this.button_openport.Text = "Open";
             this.button_openport.UseVisualStyleBackColor = true;
-            this.button_openport.Click += new System.EventHandler(this.button_openport_Click);
+            this.button_openport.Click += new System.EventHandler(this.Button_openport_Click);
             // 
             // button_Clear
             // 
@@ -336,7 +336,7 @@ namespace WindowsFormsApplication1
             this.button_Clear.TabIndex = 23;
             this.button_Clear.Text = "Clear";
             this.button_Clear.UseVisualStyleBackColor = true;
-            this.button_Clear.Click += new System.EventHandler(this.button_Clear_Click);
+            this.button_Clear.Click += new System.EventHandler(this.Button_Clear_Click);
             // 
             // textBox_param
             // 
@@ -349,8 +349,8 @@ namespace WindowsFormsApplication1
             this.textBox_param.Name = "textBox_param";
             this.textBox_param.Size = new System.Drawing.Size(386, 20);
             this.textBox_param.TabIndex = 13;
-            this.textBox_param.KeyUp += new System.Windows.Forms.KeyEventHandler(this.textBox_command_KeyUp);
-            this.textBox_param.Leave += new System.EventHandler(this.textBox_param_Leave);
+            this.textBox_param.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBox_command_KeyUp);
+            this.textBox_param.Leave += new System.EventHandler(this.TextBox_param_Leave);
             // 
             // checkBox_hexParam
             // 
@@ -363,33 +363,31 @@ namespace WindowsFormsApplication1
             this.checkBox_hexParam.TabIndex = 12;
             this.checkBox_hexParam.Text = "hex parameter";
             this.checkBox_hexParam.UseVisualStyleBackColor = true;
-            this.checkBox_hexParam.CheckedChanged += new System.EventHandler(this.checkBox_hexParam_CheckedChanged);
+            this.checkBox_hexParam.CheckedChanged += new System.EventHandler(this.CheckBox_hexParam_CheckedChanged);
             // 
             // checkBox_hexTerminal
             // 
             this.checkBox_hexTerminal.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.checkBox_hexTerminal.AutoSize = true;
-            this.checkBox_hexTerminal.Checked = true;
-            this.checkBox_hexTerminal.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBox_hexTerminal.Location = new System.Drawing.Point(90, 365);
             this.checkBox_hexTerminal.Name = "checkBox_hexTerminal";
             this.checkBox_hexTerminal.Size = new System.Drawing.Size(48, 17);
             this.checkBox_hexTerminal.TabIndex = 20;
             this.checkBox_hexTerminal.Text = "Hex;";
             this.checkBox_hexTerminal.UseVisualStyleBackColor = true;
+            this.checkBox_hexTerminal.CheckedChanged += new System.EventHandler(this.CheckBox_hexTerminal_CheckedChanged);
             // 
             // checkBox_autoscroll
             // 
             this.checkBox_autoscroll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.checkBox_autoscroll.AutoSize = true;
-            this.checkBox_autoscroll.Checked = true;
-            this.checkBox_autoscroll.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBox_autoscroll.Location = new System.Drawing.Point(12, 365);
             this.checkBox_autoscroll.Name = "checkBox_autoscroll";
             this.checkBox_autoscroll.Size = new System.Drawing.Size(75, 17);
             this.checkBox_autoscroll.TabIndex = 19;
             this.checkBox_autoscroll.Text = "Autoscroll;";
             this.checkBox_autoscroll.UseVisualStyleBackColor = true;
+            this.checkBox_autoscroll.CheckedChanged += new System.EventHandler(this.CheckBox_autoscroll_CheckedChanged);
             // 
             // checkBox_hexCommand
             // 
@@ -402,7 +400,7 @@ namespace WindowsFormsApplication1
             this.checkBox_hexCommand.TabIndex = 10;
             this.checkBox_hexCommand.Text = "hex command";
             this.checkBox_hexCommand.UseVisualStyleBackColor = true;
-            this.checkBox_hexCommand.CheckedChanged += new System.EventHandler(this.checkBox_hexCommand_CheckedChanged);
+            this.checkBox_hexCommand.CheckedChanged += new System.EventHandler(this.CheckBox_hexCommand_CheckedChanged);
             // 
             // textBox_terminal
             // 
@@ -431,8 +429,8 @@ namespace WindowsFormsApplication1
             this.textBox_command.Name = "textBox_command";
             this.textBox_command.Size = new System.Drawing.Size(386, 20);
             this.textBox_command.TabIndex = 11;
-            this.textBox_command.KeyUp += new System.Windows.Forms.KeyEventHandler(this.textBox_command_KeyUp);
-            this.textBox_command.Leave += new System.EventHandler(this.textBox_command_Leave);
+            this.textBox_command.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBox_command_KeyUp);
+            this.textBox_command.Leave += new System.EventHandler(this.TextBox_command_Leave);
             // 
             // button_Send
             // 
@@ -443,13 +441,13 @@ namespace WindowsFormsApplication1
             this.button_Send.TabIndex = 87;
             this.button_Send.Text = "Send";
             this.button_Send.UseVisualStyleBackColor = true;
-            this.button_Send.Click += new System.EventHandler(this.button_Send_Click);
+            this.button_Send.Click += new System.EventHandler(this.Button_Send_Click);
             // 
             // serialPort1
             // 
             this.serialPort1.WriteBufferSize = 20480;
             this.serialPort1.WriteTimeout = 500;
-            this.serialPort1.ErrorReceived += new System.IO.Ports.SerialErrorReceivedEventHandler(this.serialPort1_ErrorReceived);
+            this.serialPort1.ErrorReceived += new System.IO.Ports.SerialErrorReceivedEventHandler(this.SerialPort1_ErrorReceived);
             // 
             // textBox_saveTo
             // 
@@ -459,20 +457,19 @@ namespace WindowsFormsApplication1
             this.textBox_saveTo.Size = new System.Drawing.Size(70, 20);
             this.textBox_saveTo.TabIndex = 22;
             this.textBox_saveTo.Text = "com_rx.txt";
+            this.textBox_saveTo.Leave += new System.EventHandler(this.TextBox_saveTo_Leave);
             // 
             // checkBox_saveTo
             // 
             this.checkBox_saveTo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.checkBox_saveTo.AutoSize = true;
-            this.checkBox_saveTo.Checked = true;
-            this.checkBox_saveTo.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBox_saveTo.Location = new System.Drawing.Point(347, 365);
             this.checkBox_saveTo.Name = "checkBox_saveTo";
             this.checkBox_saveTo.Size = new System.Drawing.Size(64, 17);
             this.checkBox_saveTo.TabIndex = 21;
             this.checkBox_saveTo.Text = "save to:";
             this.checkBox_saveTo.UseVisualStyleBackColor = true;
-            this.checkBox_saveTo.CheckedChanged += new System.EventHandler(this.checkBox_saveTo_CheckedChanged);
+            this.checkBox_saveTo.CheckedChanged += new System.EventHandler(this.CheckBox_saveTo_CheckedChanged);
             // 
             // button_openFile
             // 
@@ -483,7 +480,7 @@ namespace WindowsFormsApplication1
             this.button_openFile.TabIndex = 16;
             this.button_openFile.Text = "Select file:";
             this.button_openFile.UseVisualStyleBackColor = true;
-            this.button_openFile.Click += new System.EventHandler(this.button_openFile_Click);
+            this.button_openFile.Click += new System.EventHandler(this.Button_openFile_Click);
             // 
             // textBox_fileName
             // 
@@ -496,8 +493,8 @@ namespace WindowsFormsApplication1
             this.textBox_fileName.Name = "textBox_fileName";
             this.textBox_fileName.Size = new System.Drawing.Size(308, 20);
             this.textBox_fileName.TabIndex = 15;
-            this.textBox_fileName.TextChanged += new System.EventHandler(this.textBox_fileName_TextChanged);
-            this.textBox_fileName.KeyUp += new System.Windows.Forms.KeyEventHandler(this.textBox_fileName_KeyUp);
+            this.textBox_fileName.TextChanged += new System.EventHandler(this.TextBox_fileName_TextChanged);
+            this.textBox_fileName.KeyUp += new System.Windows.Forms.KeyEventHandler(this.TextBox_fileName_KeyUp);
             // 
             // checkBox_hexFileOpen
             // 
@@ -510,7 +507,7 @@ namespace WindowsFormsApplication1
             this.checkBox_hexFileOpen.TabIndex = 14;
             this.checkBox_hexFileOpen.Text = "hex text data";
             this.checkBox_hexFileOpen.UseVisualStyleBackColor = true;
-            this.checkBox_hexFileOpen.CheckedChanged += new System.EventHandler(this.checkBox_hexFileOpen_CheckedChanged);
+            this.checkBox_hexFileOpen.CheckedChanged += new System.EventHandler(this.CheckBox_hexFileOpen_CheckedChanged);
             // 
             // button_sendFile
             // 
@@ -522,12 +519,12 @@ namespace WindowsFormsApplication1
             this.button_sendFile.TabIndex = 17;
             this.button_sendFile.Text = "Send file";
             this.button_sendFile.UseVisualStyleBackColor = true;
-            this.button_sendFile.Click += new System.EventHandler(this.button_sendFile_ClickAsync);
+            this.button_sendFile.Click += new System.EventHandler(this.Button_sendFile_ClickAsync);
             // 
             // openFileDialog1
             // 
             this.openFileDialog1.FileName = "openFileDialog1";
-            this.openFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog1_FileOk);
+            this.openFileDialog1.FileOk += new System.ComponentModel.CancelEventHandler(this.OpenFileDialog1_FileOk);
             // 
             // textBox_delay
             // 
@@ -635,7 +632,7 @@ namespace WindowsFormsApplication1
             this.radioButton_stream.TabStop = true;
             this.radioButton_stream.Text = "stream;";
             this.radioButton_stream.UseVisualStyleBackColor = true;
-            this.radioButton_stream.CheckedChanged += new System.EventHandler(this.radioButton_stream_CheckedChanged);
+            this.radioButton_stream.CheckedChanged += new System.EventHandler(this.RadioButton_stream_CheckedChanged);
             // 
             // label3
             // 
@@ -659,6 +656,7 @@ namespace WindowsFormsApplication1
             this.checkBox_saveTime.TabIndex = 120;
             this.checkBox_saveTime.Text = "time";
             this.checkBox_saveTime.UseVisualStyleBackColor = true;
+            this.checkBox_saveTime.CheckedChanged += new System.EventHandler(this.CheckBox_saveTime_CheckedChanged);
             // 
             // checkBox_saveOutput
             // 
