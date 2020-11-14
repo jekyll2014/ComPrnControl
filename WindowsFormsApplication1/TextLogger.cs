@@ -1,85 +1,109 @@
-﻿using System;
+﻿/*
+        private TextLogger _logger;
+
+        private enum DataDirection
+        {
+            Received,
+            Sent,
+            SignalIn,
+            SignalOut,
+            Error
+        }
+
+        private readonly Dictionary<byte, string> _directions = new Dictionary<byte, string>()
+        {
+            {(byte)DataDirection.Received, "<<"},
+            {(byte)DataDirection.Sent,">>"},
+            {(byte)DataDirection.SignalIn,"*<"},
+            {(byte)DataDirection.SignalOut,"*>"},
+            {(byte)DataDirection.Error,"!!"}
+        };
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            _logger = new TextLogger(this)
+            {
+                Channels = _directions,
+                FilterZeroChar = false,
+            };
+            textBox_terminal.DataBindings.Add("Text", _logger, "Text", false, DataSourceUpdateMode.OnPropertyChanged);
+
+            _logger.LineTimeLimit = 100;
+            _logger.LineLimit = 500;
+            _logger.AutoSave = true;
+            _logger.LogFileName = "log.txt";
+
+            _logger.DefaultTextFormat = checkBox_hexTerminal.Checked
+                ? TextLogger.TextFormat.Hex
+                : TextLogger.TextFormat.AutoReplaceHex;
+
+            _logger.DefaultTimeFormat =
+                checkBox_saveTime.Checked ? TextLogger.TimeFormat.LongTime : TextLogger.TimeFormat.None;
+
+            _logger.DefaultDateFormat =
+                checkBox_saveTime.Checked ? TextLogger.DateFormat.ShortDate : TextLogger.DateFormat.None;
+
+            _logger.AutoScroll = checkBox_autoscroll.Checked;
+
+            CheckBox_autoscroll_CheckedChanged(null, EventArgs.Empty);
+        }
+
+        private void Button_Clear_Click(object sender, EventArgs e)
+        {
+            _logger.Clear();
+        }
+
+        private void Button_closeport_Click(object sender, EventArgs e)
+        {
+            _logger.RefreshStop();
+        }
+
+        private void CheckBox_saveTo_CheckedChanged(object sender, EventArgs e)
+        {
+            _logger.AutoSave = checkBox_saveTo.Checked;
+        }
+
+        private void TextBox_saveTo_Leave(object sender, EventArgs e)
+        {
+            _logger.LogFileName = textBox_saveTo.Text;
+        }
+
+        private void CheckBox_autoscroll_CheckedChanged(object sender, EventArgs e)
+        {
+            if (checkBox_autoscroll.Checked)
+            {
+                _logger.AutoScroll = true;
+                textBox_terminal.TextChanged += TextBox_terminal_TextChanged;
+            }
+            else
+            {
+                _logger.AutoScroll = false;
+                textBox_terminal.TextChanged -= TextBox_terminal_TextChanged;
+            }
+        }
+
+        private void TextBox_terminal_TextChanged(object sender, EventArgs e)
+        {
+            textBox_terminal.SelectionStart = textBox_terminal.Text.Length;
+            textBox_terminal.ScrollToCaret();
+        }
+
+
+*/
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
 
-namespace WindowsFormsApplication1
+namespace TextLogger
 {
     public class TextLogger : IDisposable, INotifyPropertyChanged
     {
         // ring buffer for strings
-        // string complete timeout
         // string length limit
-
-        private object _textOutThreadLock = new object();
-
-        public bool noScreenOutput = false;
-        public int LineLimit = 0;
-        public int CharLimit = 0;
-        public int LineTimeLimit = 0;
-        public string LogFileName = "";
-        public bool AutoSave = false;
-        public bool AutoScroll = true;
-        public bool FilterZeroChar = true;
-        public TextFormat DefaultTextFormat = TextFormat.AutoReplaceHex; //Text, HEX, Auto (change non-readable to <HEX>)
-        public TimeFormat DefaultTimeFormat = TimeFormat.LongTime;
-        public DateFormat DefaultDateFormat = DateFormat.ShortDate;
-
-        private delegate void SetTextCallback(string text);
-
-        private readonly Form _mainForm;
-        private readonly TextBox _textBox;
-        private string _logBuffer = "";
-        private int _selStart;
-        private volatile bool _textChanged;
-        private Timer _formTimer;
-
-        public Dictionary<int, string> Channels = new Dictionary<int, string>();
-
-        private byte _prevChannel;
-        private DateTime _lastEvent = DateTime.Now;
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChanged()
-        {
-            _textChanged = true;
-            _mainForm?.Invoke((MethodInvoker)delegate
-           {
-               PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Text"));
-           });
-        }
-
-        public string Text => _logBuffer;
-
-        public TextLogger(Form mainForm, TextBox textBox = null)
-        {
-            this._mainForm = mainForm;
-            _textBox = textBox;
-        }
-
-        public void TimerStart(int delay)
-        {
-            if (_mainForm != null && _textBox != null)
-            {
-                _formTimer = new Timer();
-                _formTimer.Tick += FormTimer_Tick;
-                _formTimer.Interval = delay;
-                _formTimer.Start();
-            }
-        }
-
-        public void TimerStop()
-        {
-            _formTimer?.Stop();
-            _formTimer?.Dispose();
-        }
-
-        private void FormTimer_Tick(object sender, EventArgs e)
-        {
-            UpdateDisplay();
-        }
 
         public enum TextFormat
         {
@@ -105,46 +129,150 @@ namespace WindowsFormsApplication1
             LongDate,
         }
 
-        public bool AddText(string text, byte channel = 0)
+        private readonly object textOutThreadLock = new object();
+
+        public bool noScreenOutput = false;
+        public int LineLimit = 0;
+        public int CharLimit = 0;
+        public int LineTimeLimit = 0;
+        public string LogFileName = "";
+        public bool AutoSave = false;
+        public bool AutoScroll = true;
+        public bool FilterZeroChar = true;
+        public TextFormat DefaultTextFormat = TextFormat.AutoReplaceHex; //Text, HEX, Auto (change non-readable to <HEX>)
+        public TimeFormat DefaultTimeFormat = TimeFormat.LongTime;
+        public DateFormat DefaultDateFormat = DateFormat.ShortDate;
+        public Dictionary<byte, string> Channels = new Dictionary<byte, string>();
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private readonly Form mainForm;
+        private readonly TextBox textBox;
+        private int selStart, selLength;
+        private volatile bool textChanged;
+        private Timer refreshTimer;
+        private byte prevChannel;
+        private DateTime lastEvent = DateTime.Now;
+
+        protected void OnPropertyChanged()
         {
-            return AddText(text, DateTime.MinValue, channel, TextFormat.Default, TimeFormat.Default);
+            textChanged = true;
+            mainForm?.Invoke((MethodInvoker)delegate
+           {
+               PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Text"));
+           });
         }
 
-        public bool AddText(string text, byte channel, TimeFormat timeFormat = TimeFormat.Default)
+        public string Text { get; private set; } = "";
+
+        public TextLogger(Form mainForm, TextBox textBox = null)
         {
-            return AddText(text, DateTime.MinValue, channel, TextFormat.Default, timeFormat);
+            this.mainForm = mainForm;
+            this.textBox = textBox;
         }
 
-        public bool AddText(string text, byte channel, TextFormat textTextFormat = TextFormat.Default)
+        public void RefreshStart(int delay)
         {
-            return AddText(text, DateTime.MinValue, channel, textTextFormat, TimeFormat.Default);
+            if (mainForm != null && textBox != null)
+            {
+                refreshTimer = new Timer();
+                refreshTimer.Tick += RefreshTimerTick;
+                refreshTimer.Interval = delay;
+                refreshTimer.Start();
+            }
+        }
+
+        public void RefreshStop()
+        {
+            if (refreshTimer == null) return;
+
+            refreshTimer.Tick -= RefreshTimerTick;
+            refreshTimer?.Stop();
+            refreshTimer?.Dispose();
+        }
+
+        public bool AddText(string text, byte channel)
+        {
+            return AddText(text, channel, DateTime.MinValue, TextFormat.Default, TimeFormat.Default, DateFormat.Default);
+        }
+
+        public bool AddText(string text, byte channel, DateTime eventTime)
+        {
+            return AddText(text, channel, eventTime, TextFormat.Default, TimeFormat.Default, DateFormat.Default);
+        }
+
+        public bool AddText(string text, byte channel, DateTime eventTime, TimeFormat timeFormat)
+        {
+            return AddText(text, channel, eventTime, TextFormat.Default, timeFormat, DateFormat.Default);
+        }
+
+        public bool AddText(string text, byte channel, DateTime eventTime, DateFormat dateFormat)
+        {
+            return AddText(text, channel, eventTime, TextFormat.Default, TimeFormat.Default, dateFormat);
+        }
+
+        public bool AddText(string text, byte channel, DateTime eventTime, TextFormat textTextFormat, TimeFormat timeFormat)
+        {
+            return AddText(text, channel, eventTime, textTextFormat, timeFormat, DateFormat.Default);
+        }
+
+        public bool AddText(string text, byte channel, DateTime eventTime, TextFormat textTextFormat, DateFormat dateFormat)
+        {
+            return AddText(text, channel, eventTime, textTextFormat, TimeFormat.Default, dateFormat);
+        }
+
+        public bool AddText(string text, byte channel, DateTime eventTime, TimeFormat timeFormat, DateFormat dateFormat)
+        {
+            return AddText(text, channel, eventTime, TextFormat.Default, timeFormat, dateFormat);
+        }
+
+        public bool AddText(string text, byte channel, TextFormat textTextFormat)
+        {
+            return AddText(text, channel, DateTime.MinValue, textTextFormat, TimeFormat.Default, DateFormat.Default);
+        }
+
+        public bool AddText(string text, byte channel, TimeFormat timeFormat)
+        {
+            return AddText(text, channel, DateTime.MinValue, TextFormat.Default, timeFormat, DateFormat.Default);
+        }
+
+        public bool AddText(string text, byte channel, DateFormat dateFormat)
+        {
+            return AddText(text, channel, DateTime.MinValue, TextFormat.Default, TimeFormat.Default, dateFormat);
         }
 
         public bool AddText(string text, byte channel, TextFormat textTextFormat, TimeFormat timeFormat)
         {
-            return AddText(text, DateTime.MinValue, channel, textTextFormat, timeFormat);
+            return AddText(text, channel, DateTime.MinValue, textTextFormat, timeFormat, DateFormat.Default);
         }
 
-        public bool AddText(string text, DateTime logTime, byte channel = 0, TextFormat textFormat = TextFormat.Default,
+        public bool AddText(string text, byte channel, TextFormat textTextFormat, DateFormat dateFormat)
+        {
+            return AddText(text, channel, DateTime.MinValue, textTextFormat, TimeFormat.Default, dateFormat);
+        }
+
+        public bool AddText(string text, byte channel, TimeFormat timeFormat, DateFormat dateFormat)
+        {
+            return AddText(text, channel, DateTime.MinValue, TextFormat.Default, timeFormat, dateFormat);
+        }
+
+        public bool AddText(string text, byte channel, DateTime logTime, TextFormat textFormat,
             TimeFormat timeFormat = TimeFormat.Default, DateFormat dateFormat = DateFormat.Default)
         {
             if (text == null || text.Length <= 0) return true;
 
-            if (timeFormat != TimeFormat.None && dateFormat != DateFormat.None) logTime = DateTime.Now;
-
             var tmpStr = new StringBuilder();
             var continueString = false;
-            if (channel != _prevChannel)
+            if (channel != prevChannel)
             {
-                _prevChannel = channel;
+                prevChannel = channel;
             }
             else if (LineTimeLimit > 0)
             {
-                var t = (int)logTime.Subtract(_lastEvent).TotalMilliseconds;
+                var t = (int)logTime.Subtract(lastEvent).TotalMilliseconds;
                 if (t <= LineTimeLimit)
                     continueString = true;
 
-                _lastEvent = logTime;
+                lastEvent = logTime;
             }
 
             if (!continueString)
@@ -155,13 +283,13 @@ namespace WindowsFormsApplication1
                     if (dateFormat == DateFormat.Default)
                         dateFormat = DefaultDateFormat;
 
-                    if (timeFormat == TimeFormat.Default)
-                        timeFormat = DefaultTimeFormat;
-
                     if (dateFormat == DateFormat.LongDate)
                         tmpStr.Append(logTime.ToLongDateString() + " ");
                     else if (dateFormat == DateFormat.ShortDate)
                         tmpStr.Append(logTime.ToShortDateString() + " ");
+
+                    if (timeFormat == TimeFormat.Default)
+                        timeFormat = DefaultTimeFormat;
 
                     if (timeFormat == TimeFormat.LongTime)
                         tmpStr.Append(logTime.ToLongTimeString() + "." + logTime.Millisecond.ToString("D3") + " ");
@@ -197,10 +325,27 @@ namespace WindowsFormsApplication1
             return AddTextToBuffer(tmpStr.ToString());
         }
 
+        public override string ToString()
+        {
+            return Text;
+        }
+
+        public void Clear()
+        {
+            Text = "";
+            selStart = 0;
+            OnPropertyChanged();
+        }
+
+        public void Dispose()
+        {
+            RefreshStop();
+        }
+
         private bool AddTextToBuffer(string text)
         {
             if (text == null || text.Length <= 0) return false;
-            lock (_textOutThreadLock)
+            lock (textOutThreadLock)
             {
                 if (AutoSave && !string.IsNullOrEmpty(LogFileName))
                 {
@@ -209,27 +354,44 @@ namespace WindowsFormsApplication1
 
                 if (noScreenOutput) return true;
 
-                if (_textBox != null)
-                {
-                    _mainForm?.Invoke((MethodInvoker)delegate { _selStart = _textBox.SelectionStart; });
-                }
 
-                _logBuffer += text;
+                Text += text;
 
-                if (CharLimit > 0 && _logBuffer.Length > CharLimit)
+                var textSizeReduced = 0;
+                if (CharLimit > 0 && Text.Length > CharLimit)
                 {
-                    _logBuffer = _logBuffer.Substring(_logBuffer.Length - CharLimit);
+                    textSizeReduced = Text.Length - CharLimit;
                 }
 
                 if (LineLimit > 0)
                 {
-                    if (GetLinesCount(_logBuffer, LineLimit, out var pos))
+                    if (GetLinesCount(Text, LineLimit, out var pos))
                     {
-                        _logBuffer = _logBuffer.Substring(pos);
+                        if (pos > textSizeReduced)
+                            textSizeReduced = pos;
                     }
                 }
 
-                if (_textBox != null && _selStart < 0) _selStart = 0;
+                if (textSizeReduced > 0)
+                {
+                    Text = Text.Substring(textSizeReduced);
+                }
+
+                if (textBox != null && !AutoScroll)
+                {
+                    mainForm?.Invoke((MethodInvoker)delegate
+                   {
+                       selStart = textBox.SelectionStart;
+                       selLength = textBox.SelectionLength;
+                   });
+                    selStart -= textSizeReduced;
+                    if (selStart < 0)
+                    {
+                        selLength += selStart;
+                        selStart = 0;
+                        if (selLength < 0) selLength = 0;
+                    }
+                }
 
                 OnPropertyChanged();
             }
@@ -239,30 +401,24 @@ namespace WindowsFormsApplication1
 
         private void UpdateDisplay()
         {
-            if (_textBox != null && _textChanged)
-                _mainForm?.Invoke((MethodInvoker)delegate
+            if (textBox != null && textChanged)
+                mainForm?.Invoke((MethodInvoker)delegate
                {
-                   //var posLength = _textBox.SelectionLength;
-                   _textBox.Text = ToString();
+                   textBox.Text = Text;
                    if (AutoScroll)
                    {
-                       _textBox.SelectionStart = _textBox.Text.Length;
-                       _textBox.ScrollToCaret();
+                       textBox.SelectionStart = textBox.Text.Length;
+                       textBox.ScrollToCaret();
                    }
                    else
                    {
-                       _textBox.SelectionStart = _selStart;
-                       //_textBox.SelectionLength = posLength;
-                       _textBox.ScrollToCaret();
+                       textBox.SelectionStart = selStart;
+                       textBox.SelectionLength = selLength;
+                       textBox.ScrollToCaret();
                    }
 
-                   _textChanged = false;
+                   textChanged = false;
                });
-        }
-
-        public override string ToString()
-        {
-            return _logBuffer;
         }
 
         private static bool GetLinesCount(string data, int lineLimit, out int pos)
@@ -313,16 +469,10 @@ namespace WindowsFormsApplication1
             return str.ToString();
         }
 
-        public void Clear()
+        private void RefreshTimerTick(object sender, EventArgs e)
         {
-            _logBuffer = "";
-            _selStart = 0;
-            OnPropertyChanged();
+            UpdateDisplay();
         }
 
-        public void Dispose()
-        {
-            TimerStop();
-        }
     }
 }

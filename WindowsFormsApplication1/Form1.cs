@@ -6,48 +6,110 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace WindowsFormsApplication1
+namespace ComPrnControl
 {
     public partial class Form1 : Form
     {
         private bool _oCd1, _oDsr1, _oDtr1, _oRts1, _oCts1;
         private int _sendComing;
 
-        private void SerialPopulate()
+        private bool SerialPopulate(ComboBox portNameCombo, ComboBox portSpeedCombo = null, ComboBox portDataBitsCombo = null, ComboBox portHandShakeCombo = null, ComboBox portParityCombo = null, ComboBox portStopBitsCombo = null)
         {
-            comboBox_portname1.Items.Clear();
-            comboBox_handshake1.Items.Clear();
-            comboBox_parity1.Items.Clear();
-            comboBox_stopbits1.Items.Clear();
-            //Serial settings populate
-            comboBox_portname1.Items.Add("-None-");
+            if (portNameCombo == null) return false;
+
             //Add ports
-            foreach (var s in SerialPort.GetPortNames()) comboBox_portname1.Items.Add(s);
+            var oldPortName = portNameCombo.SelectedItem?.ToString() ?? "";
+            portNameCombo.Items.Clear();
+            portNameCombo.Items.Add("-None-");
+            portNameCombo.Items.AddRange(SerialPort.GetPortNames());
+            if (portNameCombo.Items.Contains(oldPortName)) portNameCombo.SelectedItem = oldPortName;
+            else portNameCombo.SelectedIndex = 1;
+
+            if (portNameCombo.Items.Count == 1)
+            {
+                portNameCombo.SelectedIndex = 0;
+                return false;
+            }
+
+            //Add speeds
+            if (portSpeedCombo != null)
+            {
+                string[] portSpeeds =
+                {
+                    "250000",
+                    "230400",
+                    "115200",
+                    "57600",
+                    "38400",
+                    "19200",
+                    "9600",
+                    "4800",
+                    "2400",
+                    "1200",
+                    "600",
+                    "300"
+                };
+                var oldPortSpeed = portSpeedCombo.SelectedItem?.ToString() ?? "";
+                portSpeedCombo.Items.Clear();
+                portSpeedCombo.Items.AddRange(portSpeeds);
+                if (portSpeedCombo.Items.Contains(oldPortSpeed)) portSpeedCombo.SelectedItem = oldPortSpeed;
+                else portSpeedCombo.SelectedIndex = 0;
+            }
+
+            //Add DataBits
+            if (portDataBitsCombo != null)
+            {
+                string[] portDataBits =
+                {
+                    "8",
+                    "7",
+                    "6",
+                    "5"
+                };
+
+                var oldPortDataBits = portDataBitsCombo.SelectedItem?.ToString() ?? "";
+                portDataBitsCombo.Items.Clear();
+                portDataBitsCombo.Items.AddRange(portDataBits);
+                if (portDataBitsCombo.Items.Contains(oldPortDataBits)) portDataBitsCombo.SelectedItem = oldPortDataBits;
+                else portDataBitsCombo.SelectedIndex = 0;
+
+            }
+
             //Add handshake methods
-            foreach (var s in Enum.GetNames(typeof(Handshake))) comboBox_handshake1.Items.Add(s);
+            if (portHandShakeCombo != null)
+            {
+                var oldPortHandShake = portHandShakeCombo.SelectedItem?.ToString() ?? "";
+                portHandShakeCombo.Items.Clear();
+                portHandShakeCombo.Items.AddRange(Enum.GetNames(typeof(Handshake)));
+                if (portHandShakeCombo.Items.Contains(oldPortHandShake)) portHandShakeCombo.SelectedItem = oldPortHandShake;
+                else portHandShakeCombo.SelectedIndex = 0;
+            }
+
             //Add parity
-            foreach (var s in Enum.GetNames(typeof(Parity))) comboBox_parity1.Items.Add(s);
+            if (portParityCombo != null)
+            {
+                var oldPortParity = portParityCombo.SelectedItem?.ToString() ?? "";
+                portParityCombo.Items.Clear();
+                portParityCombo.Items.AddRange(Enum.GetNames(typeof(Parity)));
+                if (portParityCombo.Items.Contains(oldPortParity)) portParityCombo.SelectedItem = oldPortParity;
+                else portParityCombo.SelectedIndex = 2;
+            }
+
             //Add stopbits
-            foreach (var s in Enum.GetNames(typeof(StopBits))) comboBox_stopbits1.Items.Add(s);
-            if (comboBox_portname1.Items.Count == 1)
+            if (portStopBitsCombo != null)
             {
-                comboBox_portname1.SelectedIndex = 0;
-                button_openport.Enabled = false;
+                var oldPortStopBits = portStopBitsCombo.SelectedItem?.ToString() ?? "";
+                portStopBitsCombo.Items.Clear();
+                portStopBitsCombo.Items.AddRange(Enum.GetNames(typeof(StopBits)));
+                if (portStopBitsCombo.Items.Contains(oldPortStopBits)) portStopBitsCombo.SelectedItem = oldPortStopBits;
+                else portStopBitsCombo.SelectedIndex = 1;
             }
-            else
-            {
-                comboBox_portname1.SelectedIndex = 1;
-            }
-            comboBox_portspeed1.SelectedIndex = 0;
-            comboBox_handshake1.SelectedIndex = 0;
-            comboBox_databits1.SelectedIndex = 0;
-            comboBox_parity1.SelectedIndex = 2;
-            comboBox_stopbits1.SelectedIndex = 1;
-            if (comboBox_portname1.SelectedIndex == 0) button_openport.Enabled = false;
-            else button_openport.Enabled = true;
+
+            return true;
         }
 
         private delegate void SetPinCallback1(bool setPin);
+
         private void SetPinCd1(bool setPin)
         {
             if (checkBox_CD1.InvokeRequired)
@@ -100,24 +162,25 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private TextLogger _logger;
+        private TextLogger.TextLogger _logger;
 
-        private readonly Dictionary<int, string> _directions = new Dictionary<int, string>()
-        {
-            {(int)DataDirection.Received, "<<"},
-            {(int)DataDirection.Sent,">>"},
-            {(int)DataDirection.SignalIn,"*<"},
-            {(int)DataDirection.SignalOut,"*>"},
-            {(int)DataDirection.Error,"!!"},
-        };
         private enum DataDirection
         {
             Received,
             Sent,
             SignalIn,
             SignalOut,
-            Error,
+            Error
         }
+
+        private readonly Dictionary<byte, string> _directions = new Dictionary<byte, string>()
+        {
+            {(byte)DataDirection.Received, "<<"},
+            {(byte)DataDirection.Sent,">>"},
+            {(byte)DataDirection.SignalIn,"*<"},
+            {(byte)DataDirection.SignalOut,"*>"},
+            {(byte)DataDirection.Error,"!!"}
+        };
 
         public Form1()
         {
@@ -127,36 +190,33 @@ namespace WindowsFormsApplication1
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            checkBox_hexCommand.Checked = ComPrnControl.Properties.Settings.Default.checkBox_hexCommand;
-            textBox_command.Text = ComPrnControl.Properties.Settings.Default.textBox_command;
-            checkBox_hexParam.Checked = ComPrnControl.Properties.Settings.Default.checkBox_hexParam;
-            textBox_param.Text = ComPrnControl.Properties.Settings.Default.textBox_param;
-            serialPort1.Encoding = Encoding.GetEncoding(ComPrnControl.Properties.Settings.Default.CodePage);
-            SerialPopulate();
+            checkBox_hexCommand.Checked = Properties.Settings.Default.checkBox_hexCommand;
+            textBox_command.Text = Properties.Settings.Default.textBox_command;
+            checkBox_hexParam.Checked = Properties.Settings.Default.checkBox_hexParam;
+            textBox_param.Text = Properties.Settings.Default.textBox_param;
+            serialPort1.Encoding = Encoding.GetEncoding(Properties.Settings.Default.CodePage);
+            button_openport.Enabled = SerialPopulate(comboBox_portname1, comboBox_portspeed1, comboBox_databits1, comboBox_handshake1, comboBox_parity1, comboBox_stopbits1);
 
-            _logger = new TextLogger(this)
+            _logger = new TextLogger.TextLogger(this)
             {
                 Channels = _directions,
                 FilterZeroChar = false,
             };
             textBox_terminal.DataBindings.Add("Text", _logger, "Text", false, DataSourceUpdateMode.OnPropertyChanged);
-            _logger.LineTimeLimit = ComPrnControl.Properties.Settings.Default.LineBreakTimeout;
-            _logger.LineLimit = ComPrnControl.Properties.Settings.Default.LogLinesLimit;
+
+            _logger.LineTimeLimit = Properties.Settings.Default.LineBreakTimeout;
+            _logger.LineLimit = Properties.Settings.Default.LogLinesLimit;
             _logger.AutoSave = checkBox_saveTo.Checked;
             _logger.LogFileName = textBox_saveTo.Text;
-            _logger.AutoScroll = checkBox_autoscroll.Checked;
             _logger.DefaultTextFormat = checkBox_hexTerminal.Checked
-                ? TextLogger.TextFormat.Hex
-                : TextLogger.TextFormat.AutoReplaceHex;
+                ? TextLogger.TextLogger.TextFormat.Hex
+                : TextLogger.TextLogger.TextFormat.AutoReplaceHex;
             _logger.DefaultTimeFormat =
-                checkBox_saveTime.Checked ? TextLogger.TimeFormat.LongTime : TextLogger.TimeFormat.None;
+                checkBox_saveTime.Checked ? TextLogger.TextLogger.TimeFormat.LongTime : TextLogger.TextLogger.TimeFormat.None;
             _logger.DefaultDateFormat =
-                checkBox_saveTime.Checked ? TextLogger.DateFormat.ShortDate : TextLogger.DateFormat.None;
-        }
-
-        private void Button_refresh_Click(object sender, EventArgs e)
-        {
-            SerialPopulate();
+                checkBox_saveTime.Checked ? TextLogger.TextLogger.DateFormat.ShortDate : TextLogger.TextLogger.DateFormat.None;
+            _logger.AutoScroll = checkBox_autoscroll.Checked;
+            CheckBox_autoscroll_CheckedChanged(null, EventArgs.Empty);
         }
 
         private void ComboBox_portname1_SelectedIndexChanged(object sender, EventArgs e)
@@ -168,6 +228,7 @@ namespace WindowsFormsApplication1
                 comboBox_databits1.Enabled = false;
                 comboBox_parity1.Enabled = false;
                 comboBox_stopbits1.Enabled = false;
+                button_openport.Enabled = false;
             }
             else
             {
@@ -176,9 +237,8 @@ namespace WindowsFormsApplication1
                 comboBox_databits1.Enabled = true;
                 comboBox_parity1.Enabled = true;
                 comboBox_stopbits1.Enabled = true;
+                button_openport.Enabled = true;
             }
-            if (comboBox_portname1.SelectedIndex == 0) button_openport.Enabled = false;
-            else button_openport.Enabled = true;
         }
 
         private void SerialPort1_DataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -190,17 +250,15 @@ namespace WindowsFormsApplication1
             }
             catch (Exception ex)
             {
-                _logger.AddText("Error reading port " + serialPort1.PortName + ": " + ex.Message, (byte)DataDirection.Error);
+                _logger.AddText("Error reading port " + serialPort1.PortName + ": " + ex.Message, (byte)DataDirection.Error, DateTime.Now, TextLogger.TextLogger.TextFormat.PlainText);
             }
-            string outStr1;
-            if (checkBox_hexTerminal.Checked) outStr1 = Accessory.ConvertByteArrayToHex(rx.ToArray());
-            else outStr1 = Encoding.GetEncoding(ComPrnControl.Properties.Settings.Default.CodePage).GetString(rx.ToArray(), 0, rx.Count);
-            _logger.AddText(outStr1, (byte)DataDirection.Received);
+            var outStr1 = Encoding.GetEncoding(ComPrnControl.Properties.Settings.Default.CodePage).GetString(rx.ToArray(), 0, rx.Count);
+            _logger.AddText(outStr1, (byte)DataDirection.Received, DateTime.Now);
         }
 
         private void SerialPort1_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
         {
-            _logger.AddText("Port1 error: " + e.EventType, (byte)DataDirection.Error);
+            _logger.AddText("Port1 error: " + e.EventType, (byte)DataDirection.Error, DateTime.Now, TextLogger.TextLogger.TextFormat.PlainText);
         }
 
         private void SerialPort1_PinChanged(object sender, SerialPinChangedEventArgs e)
@@ -245,7 +303,7 @@ namespace WindowsFormsApplication1
                 outStr += "<RING1v>";
                 SetPinRing1(false);
             }
-            _logger.AddText(outStr, (byte)DataDirection.SignalIn);
+            _logger.AddText(outStr, (byte)DataDirection.SignalIn, DateTime.Now, TextLogger.TextLogger.TextFormat.PlainText);
         }
 
         private void CheckBox_hexCommand_CheckedChanged(object sender, EventArgs e)
@@ -263,7 +321,6 @@ namespace WindowsFormsApplication1
         private void Button_Clear_Click(object sender, EventArgs e)
         {
             _logger.Clear();
-            textBox_terminal.Clear();
         }
 
         private void TextBox_command_Leave(object sender, EventArgs e)
@@ -290,7 +347,7 @@ namespace WindowsFormsApplication1
                 _oDtr1 = false;
                 outStr = "<DTR1v>";
             }
-            _logger.AddText(outStr, (byte)DataDirection.SignalOut);
+            _logger.AddText(outStr, (byte)DataDirection.SignalOut, DateTime.Now, TextLogger.TextLogger.TextFormat.PlainText);
         }
 
         private void CheckBox_RTS1_CheckedChanged(object sender, EventArgs e)
@@ -307,7 +364,7 @@ namespace WindowsFormsApplication1
                 _oRts1 = false;
                 outStr += "<RTS1v>";
             }
-            _logger.AddText(outStr, (byte)DataDirection.SignalOut);
+            _logger.AddText(outStr, (byte)DataDirection.SignalOut, DateTime.Now, TextLogger.TextLogger.TextFormat.PlainText);
         }
 
         private void Button_openport_Click(object sender, EventArgs e)
@@ -326,8 +383,8 @@ namespace WindowsFormsApplication1
                 serialPort1.Handshake = (Handshake)Enum.Parse(typeof(Handshake), comboBox_handshake1.Text);
                 serialPort1.Parity = (Parity)Enum.Parse(typeof(Parity), comboBox_parity1.Text);
                 serialPort1.StopBits = (StopBits)Enum.Parse(typeof(StopBits), comboBox_stopbits1.Text);
-                serialPort1.ReadTimeout = ComPrnControl.Properties.Settings.Default.ReceiveTimeOut;
-                serialPort1.WriteTimeout = ComPrnControl.Properties.Settings.Default.SendTimeOut;
+                serialPort1.ReadTimeout = Properties.Settings.Default.ReceiveTimeOut;
+                serialPort1.WriteTimeout = Properties.Settings.Default.SendTimeOut;
                 serialPort1.ReadBufferSize = 8192;
                 try
                 {
@@ -346,11 +403,9 @@ namespace WindowsFormsApplication1
                 }
                 serialPort1.PinChanged += SerialPort1_PinChanged;
                 serialPort1.DataReceived += SerialPort1_DataReceived;
-                button_refresh.Enabled = false;
                 button_closeport.Enabled = true;
                 button_openport.Enabled = false;
                 button_Send.Enabled = true;
-                //button_sendFile.Enabled = true;
                 TextBox_fileName_TextChanged(this, EventArgs.Empty);
                 _oCd1 = serialPort1.CDHolding;
                 checkBox_CD1.Checked = _oCd1;
@@ -393,7 +448,7 @@ namespace WindowsFormsApplication1
                     MessageBox.Show("Error sending to port " + serialPort1.PortName + ": " + ex.Message);
                 }
                 var outStr = Accessory.ConvertHexToString(sendStrHex);
-                _logger.AddText(outStr, (byte)DataDirection.Sent);
+                _logger.AddText(outStr, (byte)DataDirection.Sent, DateTime.Now);
             }
         }
 
@@ -417,7 +472,6 @@ namespace WindowsFormsApplication1
             comboBox_stopbits1.Enabled = true;
             button_Send.Enabled = false;
             button_sendFile.Enabled = false;
-            button_refresh.Enabled = true;
             button_openport.Enabled = true;
             button_closeport.Enabled = false;
             checkBox_RTS1.Enabled = false;
@@ -428,7 +482,6 @@ namespace WindowsFormsApplication1
 
         private void CheckBox_saveTo_CheckedChanged(object sender, EventArgs e)
         {
-
             textBox_saveTo.Enabled = !checkBox_saveTo.Checked;
             _logger.AutoSave = checkBox_saveTo.Checked;
         }
@@ -483,34 +536,28 @@ namespace WindowsFormsApplication1
         private void CheckBox_hexTerminal_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBox_hexTerminal.Checked)
-                _logger.DefaultTextFormat = TextLogger.TextFormat.Hex;
+                _logger.DefaultTextFormat = TextLogger.TextLogger.TextFormat.Hex;
             else
-                _logger.DefaultTextFormat = TextLogger.TextFormat.AutoReplaceHex;
+                _logger.DefaultTextFormat = TextLogger.TextLogger.TextFormat.AutoReplaceHex;
         }
 
         private void CheckBox_saveTime_CheckedChanged(object sender, EventArgs e)
         {
             if (checkBox_saveTime.Checked)
             {
-                _logger.DefaultDateFormat = TextLogger.DateFormat.ShortDate;
-                _logger.DefaultTimeFormat = TextLogger.TimeFormat.LongTime;
+                _logger.DefaultDateFormat = TextLogger.TextLogger.DateFormat.ShortDate;
+                _logger.DefaultTimeFormat = TextLogger.TextLogger.TimeFormat.LongTime;
             }
             else
             {
-                _logger.DefaultDateFormat = TextLogger.DateFormat.None;
-                _logger.DefaultTimeFormat = TextLogger.TimeFormat.None;
+                _logger.DefaultDateFormat = TextLogger.TextLogger.DateFormat.None;
+                _logger.DefaultTimeFormat = TextLogger.TextLogger.TimeFormat.None;
             }
         }
 
         private void TextBox_saveTo_Leave(object sender, EventArgs e)
         {
             _logger.LogFileName = textBox_saveTo.Text;
-        }
-
-        private void TextBox_terminal_TextChanged(object sender, EventArgs e)
-        {
-            textBox_terminal.SelectionStart = textBox_terminal.Text.Length;
-            textBox_terminal.ScrollToCaret();
         }
 
         private void CheckBox_autoscroll_CheckedChanged(object sender, EventArgs e)
@@ -527,9 +574,20 @@ namespace WindowsFormsApplication1
             }
         }
 
+        private void TextBox_terminal_TextChanged(object sender, EventArgs e)
+        {
+            textBox_terminal.SelectionStart = textBox_terminal.Text.Length;
+            textBox_terminal.ScrollToCaret();
+        }
+
         private void OpenFileDialog1_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
         {
             textBox_fileName.Text = openFileDialog1.FileName;
+        }
+
+        private void ComboBox_portname1_DropDown(object sender, EventArgs e)
+        {
+            button_openport.Enabled = SerialPopulate(comboBox_portname1, comboBox_portspeed1, comboBox_databits1, comboBox_handshake1, comboBox_parity1, comboBox_stopbits1);
         }
 
         private async void Button_sendFile_ClickAsync(object sender, EventArgs e)
@@ -558,7 +616,7 @@ namespace WindowsFormsApplication1
                         long length = 0;
                         if (repeat > 1) outStr = "\r\nSend cycle " + (n + 1).ToString() + "/" + repeat.ToString() + "\r\n";
                         else outStr = "";
-                        _logger.AddText(outStr, (byte)DataDirection.Sent);
+                        _logger.AddText(outStr, (byte)DataDirection.Sent, DateTime.Now, TextLogger.TextLogger.TextFormat.PlainText);
                         try
                         {
                             length = new FileInfo(textBox_fileName.Text).Length;
@@ -589,14 +647,14 @@ namespace WindowsFormsApplication1
                                         progressBar1.Value = (n * tmpBuffer.Length + m) * 100 / (repeat * tmpBuffer.Length);
                                         if (strDelay > 0) await TaskEx.Delay(strDelay);
                                         if (_sendComing > 1) m = tmpBuffer.Length;
+                                        byte[] outByte = new[] { tmpBuffer[m] };
+                                        outStr = Accessory.ConvertByteArrayToString(tmpBuffer);
+                                        _logger.AddText(outStr, (byte)DataDirection.Sent, DateTime.Now);
                                     }
-                                    if (checkBox_hexTerminal.Checked) outStr = Accessory.ConvertByteArrayToHex(tmpBuffer);
-                                    else outStr = Accessory.ConvertHexToString(Accessory.ConvertByteArrayToHex(tmpBuffer));
-                                    _logger.AddText(outStr, (byte)DataDirection.Sent);
                                 }
                                 catch (Exception ex)
                                 {
-                                    _logger.AddText("Error sending to port " + serialPort1.PortName + ": " + ex.Message, (byte)DataDirection.Error);
+                                    _logger.AddText("Error sending to port " + serialPort1.PortName + ": " + ex.Message, (byte)DataDirection.Error, DateTime.Now, TextLogger.TextLogger.TextFormat.PlainText);
                                 }
                             }
                             else //stream
@@ -621,12 +679,11 @@ namespace WindowsFormsApplication1
                                 }
                                 catch (Exception ex)
                                 {
-                                    _logger.AddText("Error sending to port " + serialPort1.PortName + ": " + ex.Message, (byte)DataDirection.Error);
+                                    _logger.AddText("Error sending to port " + serialPort1.PortName + ": " + ex.Message, (byte)DataDirection.Error, DateTime.Now, TextLogger.TextLogger.TextFormat.PlainText);
                                 }
                                 progressBar1.Value = 100;
-                                if (checkBox_hexTerminal.Checked) outStr = Accessory.ConvertByteArrayToHex(tmpBuffer);
-                                else outStr = Accessory.ConvertHexToString(Accessory.ConvertByteArrayToHex(tmpBuffer));
-                                _logger.AddText(outStr, (byte)DataDirection.Sent);
+                                outStr = Accessory.ConvertByteArrayToString(tmpBuffer);
+                                _logger.AddText(outStr, (byte)DataDirection.Sent, DateTime.Now);
                             }
                         }
                         else  //hex text read
@@ -636,7 +693,6 @@ namespace WindowsFormsApplication1
                                 string[] tmpBuffer = { };
                                 try
                                 {
-                                    length = new FileInfo(textBox_fileName.Text).Length;
                                     tmpBuffer = File.ReadAllLines(textBox_fileName.Text);
                                 }
                                 catch (Exception ex)
@@ -650,9 +706,8 @@ namespace WindowsFormsApplication1
                                     {
                                         var s = Accessory.ConvertHexToByteArray(tmpBuffer[m]);
                                         serialPort1.Write(s, 0, s.Length);
-                                        if (checkBox_hexTerminal.Checked) outStr = tmpBuffer[m];
-                                        else outStr = Accessory.ConvertHexToString(tmpBuffer[m].ToString());
-                                        _logger.AddText(outStr, (byte)DataDirection.Sent);
+                                        outStr = Accessory.ConvertHexToString(tmpBuffer[m]);
+                                        _logger.AddText(outStr, (byte)DataDirection.Sent, DateTime.Now);
                                         progressBar1.Value = (n * tmpBuffer.Length + m) * 100 / (repeat * tmpBuffer.Length);
                                         if (strDelay > 0) await TaskEx.Delay(strDelay);
                                         if (_sendComing > 1) m = tmpBuffer.Length;
@@ -660,7 +715,7 @@ namespace WindowsFormsApplication1
                                 }
                                 catch (Exception ex)
                                 {
-                                    _logger.AddText("Error sending to port " + serialPort1.PortName + ": " + ex.Message, (byte)DataDirection.Error);
+                                    _logger.AddText("Error sending to port " + serialPort1.PortName + ": " + ex.Message, (byte)DataDirection.Error, DateTime.Now, TextLogger.TextLogger.TextFormat.PlainText);
                                 }
                             }
                             else if (radioButton_byByte.Checked) //byte-by-byte
@@ -680,14 +735,14 @@ namespace WindowsFormsApplication1
                                 {
                                     for (var m = 0; m < tmpBuffer.Length; m += 3)
                                     {
-                                        serialPort1.Write(Accessory.ConvertHexToByteArray(tmpBuffer.Substring(m, 3)), 0, 1);
+                                        var outByte = tmpBuffer.Substring(m, 3);
+                                        serialPort1.Write(Accessory.ConvertHexToByteArray(outByte), 0, 1);
                                         progressBar1.Value = (n * tmpBuffer.Length + m) * 100 / (repeat * tmpBuffer.Length);
                                         if (strDelay > 0) await TaskEx.Delay(strDelay);
                                         if (_sendComing > 1) m = tmpBuffer.Length;
+                                        outStr = Accessory.ConvertHexToString(outByte);
+                                        _logger.AddText(outStr, (byte)DataDirection.Sent, DateTime.Now);
                                     }
-                                    if (checkBox_hexTerminal.Checked) outStr = tmpBuffer;
-                                    else outStr = Accessory.ConvertHexToString(tmpBuffer);
-                                    _logger.AddText(outStr, (byte)DataDirection.Sent);
                                 }
                                 catch (Exception ex)
                                 {
@@ -700,7 +755,6 @@ namespace WindowsFormsApplication1
                                 progressBar1.Value = 0;
                                 try
                                 {
-                                    length = new FileInfo(textBox_fileName.Text).Length;
                                     tmpBuffer = Accessory.CheckHexString(File.ReadAllText(textBox_fileName.Text));
                                 }
                                 catch (Exception ex)
@@ -717,12 +771,11 @@ namespace WindowsFormsApplication1
                                 }
                                 catch (Exception ex)
                                 {
-                                    _logger.AddText("Error sending to port " + serialPort1.PortName + ": " + ex.Message, (byte)DataDirection.Error);
+                                    _logger.AddText("Error sending to port " + serialPort1.PortName + ": " + ex.Message, (byte)DataDirection.Error, DateTime.Now, TextLogger.TextLogger.TextFormat.PlainText);
                                 }
                                 progressBar1.Value = 100;
-                                if (checkBox_hexTerminal.Checked) outStr = tmpBuffer;
-                                else outStr = Accessory.ConvertHexToString(tmpBuffer);
-                                _logger.AddText(outStr, (byte)DataDirection.Sent);
+                                outStr = Accessory.ConvertHexToString(tmpBuffer);
+                                _logger.AddText(outStr, (byte)DataDirection.Sent, DateTime.Now);
                             }
                         }
                         if (repeat > 1 && delay > 0) await TaskEx.Delay(delay);
@@ -743,6 +796,7 @@ namespace WindowsFormsApplication1
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            _logger.Dispose();
             ComPrnControl.Properties.Settings.Default.checkBox_hexCommand = checkBox_hexCommand.Checked;
             ComPrnControl.Properties.Settings.Default.textBox_command = textBox_command.Text;
             ComPrnControl.Properties.Settings.Default.checkBox_hexParam = checkBox_hexParam.Checked;
@@ -757,7 +811,7 @@ namespace WindowsFormsApplication1
 
         private void TextBox_fileName_TextChanged(object sender, EventArgs e)
         {
-            if (textBox_fileName.Text != "" && button_closeport.Enabled == true) button_sendFile.Enabled = true;
+            if (textBox_fileName.Text != "" && button_closeport.Enabled) button_sendFile.Enabled = true;
             else button_sendFile.Enabled = false;
         }
     }

@@ -1,10 +1,7 @@
-﻿using System;
-using System.IO;
-using System.IO.Ports;
-using System.Text;
+﻿using System.IO.Ports;
 using System.Windows.Forms;
 
-namespace WindowsFormsApplication1
+namespace ComPrnControl
 {
     partial class Form1
     {
@@ -35,7 +32,6 @@ namespace WindowsFormsApplication1
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.button_refresh = new System.Windows.Forms.Button();
             this.checkBox_RI1 = new System.Windows.Forms.CheckBox();
             this.checkBox_CTS1 = new System.Windows.Forms.CheckBox();
             this.checkBox_RTS1 = new System.Windows.Forms.CheckBox();
@@ -89,22 +85,13 @@ namespace WindowsFormsApplication1
             this.checkBox_saveInput = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
-            // button_refresh
-            // 
-            this.button_refresh.Location = new System.Drawing.Point(500, 52);
-            this.button_refresh.Name = "button_refresh";
-            this.button_refresh.Size = new System.Drawing.Size(72, 25);
-            this.button_refresh.TabIndex = 9;
-            this.button_refresh.Text = "Refresh";
-            this.button_refresh.UseVisualStyleBackColor = true;
-            this.button_refresh.Click += new System.EventHandler(this.Button_refresh_Click);
-            // 
             // checkBox_RI1
             // 
+            this.checkBox_RI1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBox_RI1.AutoSize = true;
             this.checkBox_RI1.Enabled = false;
             this.checkBox_RI1.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.checkBox_RI1.Location = new System.Drawing.Point(443, 57);
+            this.checkBox_RI1.Location = new System.Drawing.Point(535, 57);
             this.checkBox_RI1.Name = "checkBox_RI1";
             this.checkBox_RI1.Size = new System.Drawing.Size(37, 17);
             this.checkBox_RI1.TabIndex = 29;
@@ -113,10 +100,11 @@ namespace WindowsFormsApplication1
             // 
             // checkBox_CTS1
             // 
+            this.checkBox_CTS1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBox_CTS1.AutoSize = true;
             this.checkBox_CTS1.Enabled = false;
             this.checkBox_CTS1.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.checkBox_CTS1.Location = new System.Drawing.Point(390, 57);
+            this.checkBox_CTS1.Location = new System.Drawing.Point(482, 57);
             this.checkBox_CTS1.Name = "checkBox_CTS1";
             this.checkBox_CTS1.Size = new System.Drawing.Size(47, 17);
             this.checkBox_CTS1.TabIndex = 28;
@@ -125,10 +113,11 @@ namespace WindowsFormsApplication1
             // 
             // checkBox_RTS1
             // 
+            this.checkBox_RTS1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBox_RTS1.AutoSize = true;
             this.checkBox_RTS1.Enabled = false;
             this.checkBox_RTS1.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.checkBox_RTS1.Location = new System.Drawing.Point(336, 57);
+            this.checkBox_RTS1.Location = new System.Drawing.Point(428, 57);
             this.checkBox_RTS1.Name = "checkBox_RTS1";
             this.checkBox_RTS1.Size = new System.Drawing.Size(48, 17);
             this.checkBox_RTS1.TabIndex = 27;
@@ -138,10 +127,11 @@ namespace WindowsFormsApplication1
             // 
             // checkBox_DTR1
             // 
+            this.checkBox_DTR1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBox_DTR1.AutoSize = true;
             this.checkBox_DTR1.Enabled = false;
             this.checkBox_DTR1.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.checkBox_DTR1.Location = new System.Drawing.Point(281, 57);
+            this.checkBox_DTR1.Location = new System.Drawing.Point(373, 57);
             this.checkBox_DTR1.Name = "checkBox_DTR1";
             this.checkBox_DTR1.Size = new System.Drawing.Size(49, 17);
             this.checkBox_DTR1.TabIndex = 26;
@@ -151,10 +141,11 @@ namespace WindowsFormsApplication1
             // 
             // checkBox_DSR1
             // 
+            this.checkBox_DSR1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBox_DSR1.AutoSize = true;
             this.checkBox_DSR1.Enabled = false;
             this.checkBox_DSR1.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.checkBox_DSR1.Location = new System.Drawing.Point(226, 57);
+            this.checkBox_DSR1.Location = new System.Drawing.Point(318, 57);
             this.checkBox_DSR1.Name = "checkBox_DSR1";
             this.checkBox_DSR1.Size = new System.Drawing.Size(49, 17);
             this.checkBox_DSR1.TabIndex = 25;
@@ -163,9 +154,10 @@ namespace WindowsFormsApplication1
             // 
             // checkBox_CD1
             // 
+            this.checkBox_CD1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBox_CD1.AutoSize = true;
             this.checkBox_CD1.Enabled = false;
-            this.checkBox_CD1.Location = new System.Drawing.Point(179, 57);
+            this.checkBox_CD1.Location = new System.Drawing.Point(271, 57);
             this.checkBox_CD1.Name = "checkBox_CD1";
             this.checkBox_CD1.Size = new System.Drawing.Size(41, 17);
             this.checkBox_CD1.TabIndex = 24;
@@ -302,6 +294,7 @@ namespace WindowsFormsApplication1
             this.comboBox_portname1.Size = new System.Drawing.Size(70, 21);
             this.comboBox_portname1.Sorted = true;
             this.comboBox_portname1.TabIndex = 1;
+            this.comboBox_portname1.DropDown += new System.EventHandler(this.ComboBox_portname1_DropDown);
             this.comboBox_portname1.SelectedIndexChanged += new System.EventHandler(this.ComboBox_portname1_SelectedIndexChanged);
             // 
             // button_closeport
@@ -381,6 +374,8 @@ namespace WindowsFormsApplication1
             // 
             this.checkBox_autoscroll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.checkBox_autoscroll.AutoSize = true;
+            this.checkBox_autoscroll.Checked = true;
+            this.checkBox_autoscroll.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBox_autoscroll.Location = new System.Drawing.Point(12, 365);
             this.checkBox_autoscroll.Name = "checkBox_autoscroll";
             this.checkBox_autoscroll.Size = new System.Drawing.Size(75, 17);
@@ -463,6 +458,8 @@ namespace WindowsFormsApplication1
             // 
             this.checkBox_saveTo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.checkBox_saveTo.AutoSize = true;
+            this.checkBox_saveTo.Checked = true;
+            this.checkBox_saveTo.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBox_saveTo.Location = new System.Drawing.Point(347, 365);
             this.checkBox_saveTo.Name = "checkBox_saveTo";
             this.checkBox_saveTo.Size = new System.Drawing.Size(64, 17);
@@ -718,7 +715,6 @@ namespace WindowsFormsApplication1
             this.Controls.Add(this.textBox_terminal);
             this.Controls.Add(this.textBox_command);
             this.Controls.Add(this.button_Send);
-            this.Controls.Add(this.button_refresh);
             this.Controls.Add(this.checkBox_RI1);
             this.Controls.Add(this.checkBox_CTS1);
             this.Controls.Add(this.checkBox_RTS1);
@@ -741,7 +737,7 @@ namespace WindowsFormsApplication1
             this.Controls.Add(this.button_openport);
             this.MinimumSize = new System.Drawing.Size(600, 300);
             this.Name = "Form1";
-            this.Text = "ComPrnControl (c) Andrey Kalugin (jekyll@mail.ru), 2016";
+            this.Text = "ComPrnControl (c) Andrey Kalugin (jekyll@mail.ru), 2020";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
@@ -750,8 +746,6 @@ namespace WindowsFormsApplication1
         }
 
         #endregion
-
-        private System.Windows.Forms.Button button_refresh;
         private System.Windows.Forms.CheckBox checkBox_RI1;
         private System.Windows.Forms.CheckBox checkBox_CTS1;
         private System.Windows.Forms.CheckBox checkBox_RTS1;
