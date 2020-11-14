@@ -11,7 +11,7 @@ namespace WindowsFormsApplication1
     public partial class Form1 : Form
     {
         private bool _oCd1, _oDsr1, _oDtr1, _oRts1, _oCts1;
-        private int _sendComing = 0;
+        private int _sendComing;
 
         private void SerialPopulate()
         {
@@ -48,11 +48,11 @@ namespace WindowsFormsApplication1
         }
 
         private delegate void SetPinCallback1(bool setPin);
-        private void SetPinCD1(bool setPin)
+        private void SetPinCd1(bool setPin)
         {
             if (checkBox_CD1.InvokeRequired)
             {
-                var d = new SetPinCallback1(SetPinCD1);
+                var d = new SetPinCallback1(SetPinCd1);
                 BeginInvoke(d, new object[] { setPin });
             }
             else
@@ -61,11 +61,11 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void SetPinDSR1(bool setPin)
+        private void SetPinDsr1(bool setPin)
         {
             if (checkBox_DSR1.InvokeRequired)
             {
-                var d = new SetPinCallback1(SetPinDSR1);
+                var d = new SetPinCallback1(SetPinDsr1);
                 BeginInvoke(d, new object[] { setPin });
             }
             else
@@ -74,11 +74,11 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void SetPinCTS1(bool setPin)
+        private void SetPinCts1(bool setPin)
         {
             if (checkBox_CTS1.InvokeRequired)
             {
-                var d = new SetPinCallback1(SetPinCTS1);
+                var d = new SetPinCallback1(SetPinCts1);
                 BeginInvoke(d, new object[] { setPin });
             }
             else
@@ -87,11 +87,11 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private void SetPinRING1(bool setPin)
+        private void SetPinRing1(bool setPin)
         {
             if (checkBox_RI1.InvokeRequired)
             {
-                var d = new SetPinCallback1(SetPinRING1);
+                var d = new SetPinCallback1(SetPinRing1);
                 BeginInvoke(d, new object[] { setPin });
             }
             else
@@ -100,65 +100,29 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /*private long _oldTicks = DateTime.Now.Ticks, _limitTick = 200;
-        public void collectBuffer(string tmpBuffer, int state)
-        {
-            if (tmpBuffer != "")
-            {
-                string time = DateTime.Today.ToShortDateString() + " " + DateTime.Now.ToLongTimeString() + "." + DateTime.Now.Millisecond.ToString("D3");
-                lock (threadLock)
-                {
-                    if (txtOutState != state || (DateTime.Now.Ticks - oldTicks) > limitTick || state == Port1DataOut)
-                    {
-                        if (state == Port1DataIn) tmpBuffer = "<< " + tmpBuffer;         //sending data
-                        else if (state == Port1DataOut) tmpBuffer = ">> " + tmpBuffer;    //receiving data
-                        else if (state == Port1SignalIn) tmpBuffer = "<< " + tmpBuffer;    //pin change received
-                        else if (state == Port1SignalOut) tmpBuffer = ">> " + tmpBuffer;    //pin changed by user
-                        else if (state == Port1Error) tmpBuffer = "!! " + tmpBuffer;    //error occured
-
-                        if (checkBox_saveTime.Checked == true) tmpBuffer = time + " " + tmpBuffer;
-                        tmpBuffer = "\r\n" + tmpBuffer;
-                        txtOutState = state;
-                    }
-                    SetText(tmpBuffer);
-
-                    if ((checkBox_saveInput.Checked == true && (state == Port1DataIn || state == Port1SignalIn)) || (checkBox_saveOutput.Checked == true && (state == Port1DataOut || state == Port1SignalOut)))
-                    {
-                        try
-                        {
-                            File.AppendAllText(textBox_saveTo.Text, tmpBuffer, Encoding.GetEncoding(ComPrnControl.Properties.Settings.Default.CodePage));
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show("\r\nError opening file " + textBox_saveTo.Text + ": " + ex.Message);
-                        }
-                    }
-                    oldTicks = DateTime.Now.Ticks;
-                }
-            }
-        }*/
-
         private TextLogger _logger;
-        private readonly string[] _directions = { "<<", ">>", "!!", "**" };
 
+        private readonly Dictionary<int, string> _directions = new Dictionary<int, string>()
+        {
+            {(int)DataDirection.Received, "<<"},
+            {(int)DataDirection.Sent,">>"},
+            {(int)DataDirection.SignalIn,"*<"},
+            {(int)DataDirection.SignalOut,"*>"},
+            {(int)DataDirection.Error,"!!"},
+        };
         private enum DataDirection
         {
-            None,
             Received,
             Sent,
             SignalIn,
             SignalOut,
             Error,
-            Note
         }
-
 
         public Form1()
         {
             InitializeComponent();
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.DoubleBuffer, true);
-            _logger = new TextLogger(this);
-            textBox_terminal.DataBindings.Add("Text", _logger, "Text", false, DataSourceUpdateMode.OnPropertyChanged);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -170,10 +134,15 @@ namespace WindowsFormsApplication1
             serialPort1.Encoding = Encoding.GetEncoding(ComPrnControl.Properties.Settings.Default.CodePage);
             SerialPopulate();
 
+            _logger = new TextLogger(this)
+            {
+                Channels = _directions,
+                FilterZeroChar = false,
+            };
+            textBox_terminal.DataBindings.Add("Text", _logger, "Text", false, DataSourceUpdateMode.OnPropertyChanged);
             _logger.LineTimeLimit = ComPrnControl.Properties.Settings.Default.LineBreakTimeout;
-            _logger.LinesLimit = ComPrnControl.Properties.Settings.Default.LogLinesLimit;
-            _logger.FilterZeroChar = false;
-            _logger.AutoSave = true;
+            _logger.LineLimit = ComPrnControl.Properties.Settings.Default.LogLinesLimit;
+            _logger.AutoSave = checkBox_saveTo.Checked;
             _logger.LogFileName = textBox_saveTo.Text;
             _logger.AutoScroll = checkBox_autoscroll.Checked;
             _logger.DefaultTextFormat = checkBox_hexTerminal.Checked
@@ -183,8 +152,6 @@ namespace WindowsFormsApplication1
                 checkBox_saveTime.Checked ? TextLogger.TimeFormat.LongTime : TextLogger.TimeFormat.None;
             _logger.DefaultDateFormat =
                 checkBox_saveTime.Checked ? TextLogger.DateFormat.ShortDate : TextLogger.DateFormat.None;
-
-            _logger.Channels.AddRange(_directions);
         }
 
         private void Button_refresh_Click(object sender, EventArgs e)
@@ -238,9 +205,9 @@ namespace WindowsFormsApplication1
 
         private void SerialPort1_PinChanged(object sender, SerialPinChangedEventArgs e)
         {
-            SetPinCD1(serialPort1.CDHolding);
-            SetPinDSR1(serialPort1.DsrHolding);
-            SetPinCTS1(serialPort1.CtsHolding);
+            SetPinCd1(serialPort1.CDHolding);
+            SetPinDsr1(serialPort1.DsrHolding);
+            SetPinCts1(serialPort1.CtsHolding);
             var outStr = "";
             if (serialPort1.CDHolding && !_oCd1)
             {
@@ -274,9 +241,9 @@ namespace WindowsFormsApplication1
             }
             if (e.EventType.Equals(SerialPinChange.Ring))
             {
-                SetPinRING1(true);
+                SetPinRing1(true);
                 outStr += "<RING1v>";
-                SetPinRING1(false);
+                SetPinRing1(false);
             }
             _logger.AddText(outStr, (byte)DataDirection.SignalIn);
         }
@@ -461,16 +428,9 @@ namespace WindowsFormsApplication1
 
         private void CheckBox_saveTo_CheckedChanged(object sender, EventArgs e)
         {
-            if (checkBox_saveTo.Checked)
-            {
-                textBox_saveTo.Enabled = false;
-                _logger.AutoSave = true;
-            }
-            else
-            {
-                textBox_saveTo.Enabled = true;
-                _logger.AutoSave = false;
-            }
+
+            textBox_saveTo.Enabled = !checkBox_saveTo.Checked;
+            _logger.AutoSave = checkBox_saveTo.Checked;
         }
 
         private void Button_openFile_Click(object sender, EventArgs e)
@@ -555,7 +515,6 @@ namespace WindowsFormsApplication1
 
         private void CheckBox_autoscroll_CheckedChanged(object sender, EventArgs e)
         {
-
             if (checkBox_autoscroll.Checked)
             {
                 _logger.AutoScroll = true;

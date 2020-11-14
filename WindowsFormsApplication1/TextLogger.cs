@@ -16,8 +16,9 @@ namespace WindowsFormsApplication1
         private object _textOutThreadLock = new object();
 
         public bool noScreenOutput = false;
-        public int LinesLimit = 500;
-        public int LineTimeLimit = 500;
+        public int LineLimit = 0;
+        public int CharLimit = 0;
+        public int LineTimeLimit = 0;
         public string LogFileName = "";
         public bool AutoSave = false;
         public bool AutoScroll = true;
@@ -28,40 +29,39 @@ namespace WindowsFormsApplication1
 
         private delegate void SetTextCallback(string text);
 
-        private readonly Form mainForm;
+        private readonly Form _mainForm;
         private readonly TextBox _textBox;
-        private readonly List<string> _logBuffer = new List<string>();
-        private StringBuilder _unfinishedString = new StringBuilder();
+        private string _logBuffer = "";
         private int _selStart;
         private volatile bool _textChanged;
         private Timer _formTimer;
 
-        public List<string> Channels = new List<string> { "" };
+        public Dictionary<int, string> Channels = new Dictionary<int, string>();
 
         private byte _prevChannel;
-
+        private DateTime _lastEvent = DateTime.Now;
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged()
         {
             _textChanged = true;
-            mainForm?.Invoke((MethodInvoker)delegate
+            _mainForm?.Invoke((MethodInvoker)delegate
            {
                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Text"));
            });
         }
 
-        public string Text => ToString();
+        public string Text => _logBuffer;
 
         public TextLogger(Form mainForm, TextBox textBox = null)
         {
-            this.mainForm = mainForm;
+            this._mainForm = mainForm;
             _textBox = textBox;
         }
 
         public void TimerStart(int delay)
         {
-            if (mainForm != null && _textBox != null)
+            if (_mainForm != null && _textBox != null)
             {
                 _formTimer = new Timer();
                 _formTimer.Tick += FormTimer_Tick;
@@ -130,41 +130,56 @@ namespace WindowsFormsApplication1
         {
             if (text == null || text.Length <= 0) return true;
 
-            var tmpStr = new StringBuilder();
-            if (channel != _prevChannel)
-            {
-                if (_unfinishedString.Length > 0)
-                    AddText(Environment.NewLine, logTime, _prevChannel, textFormat, timeFormat);
-                _prevChannel = channel;
-            }
-
             if (timeFormat != TimeFormat.None && dateFormat != DateFormat.None) logTime = DateTime.Now;
 
-            if (logTime != DateTime.MinValue)
+            var tmpStr = new StringBuilder();
+            var continueString = false;
+            if (channel != _prevChannel)
             {
-                if (dateFormat == DateFormat.Default)
-                    dateFormat = DefaultDateFormat;
+                _prevChannel = channel;
+            }
+            else if (LineTimeLimit > 0)
+            {
+                var t = (int)logTime.Subtract(_lastEvent).TotalMilliseconds;
+                if (t <= LineTimeLimit)
+                    continueString = true;
 
-                if (timeFormat == TimeFormat.Default)
-                    timeFormat = DefaultTimeFormat;
-
-                if (dateFormat == DateFormat.LongDate)
-                    tmpStr.Append(logTime.ToLongDateString() + " ");
-                else if (dateFormat == DateFormat.ShortDate)
-                    tmpStr.Append(logTime.ToShortDateString() + " ");
-
-                if (timeFormat == TimeFormat.LongTime)
-                    tmpStr.Append(logTime.ToLongTimeString() + "." + logTime.Millisecond.ToString("D3") + " ");
-
-                else if (timeFormat == TimeFormat.ShortTime)
-                    tmpStr.Append(logTime.ToShortTimeString() + " ");
+                _lastEvent = logTime;
             }
 
-            if (channel >= Channels.Count) channel = 0;
+            if (!continueString)
+            {
+                tmpStr.Append(Environment.NewLine);
+                if (logTime != DateTime.MinValue)
+                {
+                    if (dateFormat == DateFormat.Default)
+                        dateFormat = DefaultDateFormat;
 
-            if (!string.IsNullOrEmpty(Channels[channel])) tmpStr.Append(Channels[channel] + " ");
+                    if (timeFormat == TimeFormat.Default)
+                        timeFormat = DefaultTimeFormat;
+
+                    if (dateFormat == DateFormat.LongDate)
+                        tmpStr.Append(logTime.ToLongDateString() + " ");
+                    else if (dateFormat == DateFormat.ShortDate)
+                        tmpStr.Append(logTime.ToShortDateString() + " ");
+
+                    if (timeFormat == TimeFormat.LongTime)
+                        tmpStr.Append(logTime.ToLongTimeString() + "." + logTime.Millisecond.ToString("D3") + " ");
+
+                    else if (timeFormat == TimeFormat.ShortTime)
+                        tmpStr.Append(logTime.ToShortTimeString() + " ");
+                }
+
+                if (Channels.ContainsKey(channel))
+                {
+                    tmpStr.Append(Channels[channel] + " ");
+                }
+            }
 
             if (textFormat == TextFormat.Default) textFormat = DefaultTextFormat;
+
+            if (FilterZeroChar)
+                text = Accessory.FilterZeroChar(text);
 
             if (textFormat == TextFormat.PlainText)
             {
@@ -173,48 +188,44 @@ namespace WindowsFormsApplication1
             else if (textFormat == TextFormat.Hex)
             {
                 tmpStr.Append(Accessory.ConvertStringToHex(text));
-                tmpStr.Append("\r\n");
             }
             else if (textFormat == TextFormat.AutoReplaceHex)
             {
                 tmpStr.Append(ReplaceUnprintable(text));
-                tmpStr.Append("\r\n");
             }
 
-            var inputStrings = ConvertTextToStringArray(tmpStr.ToString(), ref _unfinishedString);
-            return AddTextToBuffer(inputStrings);
+            return AddTextToBuffer(tmpStr.ToString());
         }
 
-        private bool AddTextToBuffer(IList<string> text)
+        private bool AddTextToBuffer(string text)
         {
-            if (text == null || text.Count <= 0) return false;
+            if (text == null || text.Length <= 0) return false;
             lock (_textOutThreadLock)
             {
-                if (FilterZeroChar)
-                    for (var i = 0; i < text.Count; i++)
-                        text[i] = Accessory.FilterZeroChar(text[i]);
-
                 if (AutoSave && !string.IsNullOrEmpty(LogFileName))
                 {
-                    var textBuffer = new StringBuilder();
-                    foreach (var t in text)
-                    {
-                        textBuffer.Append(t + Environment.NewLine);
-                    }
-                    if (textBuffer.Length>0) File.AppendAllText(LogFileName, textBuffer.ToString());
+                    File.AppendAllText(LogFileName, text);
                 }
 
                 if (noScreenOutput) return true;
 
-                if (_textBox != null) _selStart = _textBox.SelectionStart;
-
-                _logBuffer.AddRange(text);
-                if (_logBuffer.Count >= LinesLimit)
+                if (_textBox != null)
                 {
-                    while (_logBuffer.Count >= LinesLimit)
+                    _mainForm?.Invoke((MethodInvoker)delegate { _selStart = _textBox.SelectionStart; });
+                }
+
+                _logBuffer += text;
+
+                if (CharLimit > 0 && _logBuffer.Length > CharLimit)
+                {
+                    _logBuffer = _logBuffer.Substring(_logBuffer.Length - CharLimit);
+                }
+
+                if (LineLimit > 0)
+                {
+                    if (GetLinesCount(_logBuffer, LineLimit, out var pos))
                     {
-                        if (_textBox != null) _selStart -= _logBuffer[0].Length;
-                        _logBuffer.RemoveAt(0);
+                        _logBuffer = _logBuffer.Substring(pos);
                     }
                 }
 
@@ -229,10 +240,10 @@ namespace WindowsFormsApplication1
         private void UpdateDisplay()
         {
             if (_textBox != null && _textChanged)
-                mainForm?.Invoke((MethodInvoker)delegate
+                _mainForm?.Invoke((MethodInvoker)delegate
                {
-                    //var posLength = _textBox.SelectionLength;
-                    _textBox.Text = ToString();
+                   //var posLength = _textBox.SelectionLength;
+                   _textBox.Text = ToString();
                    if (AutoScroll)
                    {
                        _textBox.SelectionStart = _textBox.Text.Length;
@@ -241,8 +252,8 @@ namespace WindowsFormsApplication1
                    else
                    {
                        _textBox.SelectionStart = _selStart;
-                        //_textBox.SelectionLength = posLength;
-                        _textBox.ScrollToCaret();
+                       //_textBox.SelectionLength = posLength;
+                       _textBox.ScrollToCaret();
                    }
 
                    _textChanged = false;
@@ -251,15 +262,10 @@ namespace WindowsFormsApplication1
 
         public override string ToString()
         {
-            var tmpTxt = new StringBuilder();
-            foreach (var str in _logBuffer) tmpTxt.Append(str + Environment.NewLine);
-
-            tmpTxt.Append(_unfinishedString);
-
-            return tmpTxt.ToString();
+            return _logBuffer;
         }
 
-        private static string[] ConvertTextToStringArray(string data, ref StringBuilder nonComplete)
+        private static bool GetLinesCount(string data, int lineLimit, out int pos)
         {
             var divider = new HashSet<char>
             {
@@ -267,20 +273,23 @@ namespace WindowsFormsApplication1
                 '\n'
             };
 
-            var stringCollection = new List<string>();
-
-            foreach (var t in data)
-                if (divider.Contains(t))
+            var lineCount = 0;
+            pos = 0;
+            for (var i = data.Length - 1; i >= 0; i--)
+            {
+                if (divider.Contains(data[i])) // check 2 divider 
                 {
-                    if (nonComplete.Length > 0) stringCollection.Add(nonComplete.ToString());
-                    nonComplete.Clear();
-                }
-                else
-                {
-                    if (!divider.Contains(t)) nonComplete.Append(t);
+                    lineCount++;
+                    if (i - 1 >= 0 && divider.Contains(data[i - 1])) i--;
                 }
 
-            return stringCollection.ToArray();
+                if (lineCount >= lineLimit)
+                {
+                    pos = i + 1;
+                    return true;
+                }
+            }
+            return false;
         }
 
         private static string ReplaceUnprintable(string text, bool leaveCrLf = true)
@@ -306,9 +315,8 @@ namespace WindowsFormsApplication1
 
         public void Clear()
         {
-            _logBuffer.Clear();
+            _logBuffer = "";
             _selStart = 0;
-            _unfinishedString.Clear();
             OnPropertyChanged();
         }
 
