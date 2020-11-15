@@ -79,10 +79,7 @@ namespace ComPrnControl
             this.radioButton_byString = new System.Windows.Forms.RadioButton();
             this.radioButton_byByte = new System.Windows.Forms.RadioButton();
             this.radioButton_stream = new System.Windows.Forms.RadioButton();
-            this.label3 = new System.Windows.Forms.Label();
             this.checkBox_saveTime = new System.Windows.Forms.CheckBox();
-            this.checkBox_saveOutput = new System.Windows.Forms.CheckBox();
-            this.checkBox_saveInput = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // checkBox_RI1
@@ -446,7 +443,7 @@ namespace ComPrnControl
             // 
             // textBox_saveTo
             // 
-            this.textBox_saveTo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.textBox_saveTo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox_saveTo.Location = new System.Drawing.Point(417, 363);
             this.textBox_saveTo.Name = "textBox_saveTo";
             this.textBox_saveTo.Size = new System.Drawing.Size(70, 20);
@@ -456,15 +453,15 @@ namespace ComPrnControl
             // 
             // checkBox_saveTo
             // 
-            this.checkBox_saveTo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.checkBox_saveTo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.checkBox_saveTo.AutoSize = true;
             this.checkBox_saveTo.Checked = true;
             this.checkBox_saveTo.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox_saveTo.Location = new System.Drawing.Point(347, 365);
+            this.checkBox_saveTo.Location = new System.Drawing.Point(343, 365);
             this.checkBox_saveTo.Name = "checkBox_saveTo";
-            this.checkBox_saveTo.Size = new System.Drawing.Size(64, 17);
+            this.checkBox_saveTo.Size = new System.Drawing.Size(68, 17);
             this.checkBox_saveTo.TabIndex = 21;
-            this.checkBox_saveTo.Text = "save to:";
+            this.checkBox_saveTo.Text = "Save log";
             this.checkBox_saveTo.UseVisualStyleBackColor = true;
             this.checkBox_saveTo.CheckedChanged += new System.EventHandler(this.CheckBox_saveTo_CheckedChanged);
             // 
@@ -631,65 +628,26 @@ namespace ComPrnControl
             this.radioButton_stream.UseVisualStyleBackColor = true;
             this.radioButton_stream.CheckedChanged += new System.EventHandler(this.RadioButton_stream_CheckedChanged);
             // 
-            // label3
-            // 
-            this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(141, 366);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(35, 13);
-            this.label3.TabIndex = 121;
-            this.label3.Text = "Save:";
-            // 
             // checkBox_saveTime
             // 
             this.checkBox_saveTime.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.checkBox_saveTime.AutoSize = true;
             this.checkBox_saveTime.Checked = true;
             this.checkBox_saveTime.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox_saveTime.Location = new System.Drawing.Point(179, 365);
+            this.checkBox_saveTime.Location = new System.Drawing.Point(144, 365);
             this.checkBox_saveTime.Name = "checkBox_saveTime";
-            this.checkBox_saveTime.Size = new System.Drawing.Size(45, 17);
+            this.checkBox_saveTime.Size = new System.Drawing.Size(49, 17);
             this.checkBox_saveTime.TabIndex = 120;
-            this.checkBox_saveTime.Text = "time";
+            this.checkBox_saveTime.Text = "Time";
             this.checkBox_saveTime.UseVisualStyleBackColor = true;
             this.checkBox_saveTime.CheckedChanged += new System.EventHandler(this.CheckBox_saveTime_CheckedChanged);
-            // 
-            // checkBox_saveOutput
-            // 
-            this.checkBox_saveOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.checkBox_saveOutput.AutoSize = true;
-            this.checkBox_saveOutput.Checked = true;
-            this.checkBox_saveOutput.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox_saveOutput.Location = new System.Drawing.Point(285, 365);
-            this.checkBox_saveOutput.Name = "checkBox_saveOutput";
-            this.checkBox_saveOutput.Size = new System.Drawing.Size(56, 17);
-            this.checkBox_saveOutput.TabIndex = 118;
-            this.checkBox_saveOutput.Text = "output";
-            this.checkBox_saveOutput.UseVisualStyleBackColor = true;
-            // 
-            // checkBox_saveInput
-            // 
-            this.checkBox_saveInput.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.checkBox_saveInput.AutoSize = true;
-            this.checkBox_saveInput.Checked = true;
-            this.checkBox_saveInput.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox_saveInput.Location = new System.Drawing.Point(230, 365);
-            this.checkBox_saveInput.Name = "checkBox_saveInput";
-            this.checkBox_saveInput.Size = new System.Drawing.Size(49, 17);
-            this.checkBox_saveInput.TabIndex = 119;
-            this.checkBox_saveInput.Text = "input";
-            this.checkBox_saveInput.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(584, 394);
-            this.Controls.Add(this.label3);
             this.Controls.Add(this.checkBox_saveTime);
-            this.Controls.Add(this.checkBox_saveOutput);
-            this.Controls.Add(this.checkBox_saveInput);
             this.Controls.Add(this.radioButton_stream);
             this.Controls.Add(this.radioButton_byByte);
             this.Controls.Add(this.radioButton_byString);
@@ -793,10 +751,7 @@ namespace ComPrnControl
         private System.Windows.Forms.RadioButton radioButton_byByte;
         private System.Windows.Forms.RadioButton radioButton_stream;
         public SerialPort serialPort1;
-        private Label label3;
         private CheckBox checkBox_saveTime;
-        private CheckBox checkBox_saveOutput;
-        private CheckBox checkBox_saveInput;
     }
 }
 
