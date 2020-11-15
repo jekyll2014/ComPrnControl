@@ -84,10 +84,12 @@
 
         private void TextBox_terminal_TextChanged(object sender, EventArgs e)
         {
-            textBox_terminal.SelectionStart = textBox_terminal.Text.Length;
-            textBox_terminal.ScrollToCaret();
+            if (checkBox_autoScroll.Checked)
+            {
+                textBox_terminal.SelectionStart = textBox_terminal.Text.Length;
+                textBox_terminal.ScrollToCaret();
+            }
         }
-
 
 */
 
@@ -129,9 +131,9 @@ namespace TextLogger
             LongDate,
         }
 
-        private readonly object textOutThreadLock = new object();
+        private readonly object _textOutThreadLock = new object();
 
-        public bool noScreenOutput = false;
+        public bool NoScreenOutput = false;
         public int LineLimit = 0;
         public int CharLimit = 0;
         public int LineTimeLimit = 0;
@@ -145,18 +147,18 @@ namespace TextLogger
         public Dictionary<byte, string> Channels = new Dictionary<byte, string>();
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private readonly Form mainForm;
-        private readonly TextBox textBox;
-        private int selStart, selLength;
-        private volatile bool textChanged;
-        private Timer refreshTimer;
-        private byte prevChannel;
-        private DateTime lastEvent = DateTime.Now;
+        private readonly Form _mainForm;
+        private readonly TextBox _textBox;
+        private int _selStart, _selLength;
+        private volatile bool _textChanged;
+        private Timer _refreshTimer;
+        private byte _prevChannel;
+        private DateTime _lastEvent = DateTime.Now;
 
         protected void OnPropertyChanged()
         {
-            textChanged = true;
-            mainForm?.Invoke((MethodInvoker)delegate
+            _textChanged = true;
+            _mainForm?.Invoke((MethodInvoker)delegate
            {
                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Text"));
            });
@@ -166,28 +168,28 @@ namespace TextLogger
 
         public TextLogger(Form mainForm, TextBox textBox = null)
         {
-            this.mainForm = mainForm;
-            this.textBox = textBox;
+            this._mainForm = mainForm;
+            this._textBox = textBox;
         }
 
         public void RefreshStart(int delay)
         {
-            if (mainForm != null && textBox != null)
+            if (_mainForm != null && _textBox != null)
             {
-                refreshTimer = new Timer();
-                refreshTimer.Tick += RefreshTimerTick;
-                refreshTimer.Interval = delay;
-                refreshTimer.Start();
+                _refreshTimer = new Timer();
+                _refreshTimer.Tick += RefreshTimerTick;
+                _refreshTimer.Interval = delay;
+                _refreshTimer.Start();
             }
         }
 
         public void RefreshStop()
         {
-            if (refreshTimer == null) return;
+            if (_refreshTimer == null) return;
 
-            refreshTimer.Tick -= RefreshTimerTick;
-            refreshTimer?.Stop();
-            refreshTimer?.Dispose();
+            _refreshTimer.Tick -= RefreshTimerTick;
+            _refreshTimer?.Stop();
+            _refreshTimer?.Dispose();
         }
 
         public bool AddText(string text, byte channel)
@@ -262,17 +264,17 @@ namespace TextLogger
 
             var tmpStr = new StringBuilder();
             var continueString = false;
-            if (channel != prevChannel)
+            if (channel != _prevChannel)
             {
-                prevChannel = channel;
+                _prevChannel = channel;
             }
             else if (LineTimeLimit > 0)
             {
-                var t = (int)logTime.Subtract(lastEvent).TotalMilliseconds;
+                var t = (int)logTime.Subtract(_lastEvent).TotalMilliseconds;
                 if (t <= LineTimeLimit)
                     continueString = true;
 
-                lastEvent = logTime;
+                _lastEvent = logTime;
             }
 
             if (!continueString)
@@ -300,7 +302,7 @@ namespace TextLogger
 
                 if (Channels.ContainsKey(channel))
                 {
-                    tmpStr.Append(Channels[channel] + " ");
+                    if (!string.IsNullOrEmpty(Channels[channel])) tmpStr.Append(Channels[channel] + " ");
                 }
             }
 
@@ -333,7 +335,7 @@ namespace TextLogger
         public void Clear()
         {
             Text = "";
-            selStart = 0;
+            _selStart = 0;
             OnPropertyChanged();
         }
 
@@ -345,14 +347,14 @@ namespace TextLogger
         private bool AddTextToBuffer(string text)
         {
             if (text == null || text.Length <= 0) return false;
-            lock (textOutThreadLock)
+            lock (_textOutThreadLock)
             {
                 if (AutoSave && !string.IsNullOrEmpty(LogFileName))
                 {
                     File.AppendAllText(LogFileName, text);
                 }
 
-                if (noScreenOutput) return true;
+                if (NoScreenOutput) return true;
 
 
                 Text += text;
@@ -377,19 +379,19 @@ namespace TextLogger
                     Text = Text.Substring(textSizeReduced);
                 }
 
-                if (textBox != null && !AutoScroll)
+                if (_textBox != null && !AutoScroll)
                 {
-                    mainForm?.Invoke((MethodInvoker)delegate
+                    _mainForm?.Invoke((MethodInvoker)delegate
                    {
-                       selStart = textBox.SelectionStart;
-                       selLength = textBox.SelectionLength;
+                       _selStart = _textBox.SelectionStart;
+                       _selLength = _textBox.SelectionLength;
                    });
-                    selStart -= textSizeReduced;
-                    if (selStart < 0)
+                    _selStart -= textSizeReduced;
+                    if (_selStart < 0)
                     {
-                        selLength += selStart;
-                        selStart = 0;
-                        if (selLength < 0) selLength = 0;
+                        _selLength += _selStart;
+                        _selStart = 0;
+                        if (_selLength < 0) _selLength = 0;
                     }
                 }
 
@@ -401,23 +403,23 @@ namespace TextLogger
 
         private void UpdateDisplay()
         {
-            if (textBox != null && textChanged)
-                mainForm?.Invoke((MethodInvoker)delegate
+            if (_textBox != null && _textChanged)
+                _mainForm?.Invoke((MethodInvoker)delegate
                {
-                   textBox.Text = Text;
+                   _textBox.Text = Text;
                    if (AutoScroll)
                    {
-                       textBox.SelectionStart = textBox.Text.Length;
-                       textBox.ScrollToCaret();
+                       _textBox.SelectionStart = _textBox.Text.Length;
+                       _textBox.ScrollToCaret();
                    }
                    else
                    {
-                       textBox.SelectionStart = selStart;
-                       textBox.SelectionLength = selLength;
-                       textBox.ScrollToCaret();
+                       _textBox.SelectionStart = _selStart;
+                       _textBox.SelectionLength = _selLength;
+                       _textBox.ScrollToCaret();
                    }
 
-                   textChanged = false;
+                   _textChanged = false;
                });
         }
 
@@ -455,9 +457,9 @@ namespace TextLogger
             for (var i = 0; i < text.Length; i++)
             {
                 var c = text[i];
-                if (char.IsControl(c) && !(leaveCrLf && (c == '\r' || c == '\n')))
+                if (char.IsControl(c) && !(leaveCrLf && (c == '\r' || c == '\n' || c == '\t')))
                 {
-                    str.Append("<" + Accessory.ConvertStringToHex(c.ToString()) + ">");
+                    str.Append("<0x" + Accessory.ConvertStringToHex(c.ToString()).Trim() + ">");
                     if (c == '\n') str.Append("\n");
                 }
                 else
